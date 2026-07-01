@@ -11,6 +11,7 @@ Pouzitie: python make_longform.py <niche> [minuty] [seed]
 import os, sys, subprocess
 import ambient as A
 import music
+import thumbnail
 
 OUT, TMP, FF = A.OUT, A.TMP, A.FF
 SR = 48000
@@ -58,8 +59,13 @@ def make(niche, minutes, seed=7):
            "-af", af, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", out]
     if subprocess.run(cmd).returncode != 0:
         raise SystemExit("finalny mux zlyhal")
-    accent = tuple((A.PALETTES[p["palette"]][1] * 255).astype(int).tolist())
-    A.thumbnail(last, p["brand"], p["sub"], accent, os.path.join(OUT, f"{niche}_{int(minutes)}min.jpg"))
+    jpg = os.path.join(OUT, f"{niche}_{int(minutes)}min.jpg")
+    try:                                            # pekny Lumora thumbnail (aurora+hory+mesiac+text)
+        thumbnail.make(niche, minutes, seed, jpg)
+    except Exception as e:                          # poistka: ak zlyha (napr. font), pouzi stary frame
+        print(f"    [pozn.] pekny thumbnail zlyhal ({e}) -> fallback na frame")
+        accent = tuple((A.PALETTES[p["palette"]][1] * 255).astype(int).tolist())
+        A.thumbnail(last, p["brand"], p["sub"], accent, jpg)
     print(f"[{niche}] HOTOVO -> {out}")
     return out
 
