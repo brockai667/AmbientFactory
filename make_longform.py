@@ -17,7 +17,7 @@ import visual
 OUT, TMP, FF = A.OUT, A.TMP, A.FF
 SR = 48000
 AUDIO_LOOP_CAP = 12 * 60      # max dlzka hud. slucky (dlhsie sa loopuje cez stream_loop)
-VIS_LOOP = 90                 # dlzka vizual slucky (s) -- renderuje sa RAZ
+VIS_LOOP = 40                 # dlzka vizual slucky (s) = perioda pohybu -- renderuje sa RAZ
 
 
 def stream_audio(niche, seconds, path, seed=7):

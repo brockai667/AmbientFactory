@@ -27,13 +27,16 @@ def _dot(size, color, bright):
     return Image.fromarray(arr, "RGBA")
 
 
-def frames(niche, W, H, fps, seconds, seed):
+def frames(niche, W, H, fps, seconds, seed, period=None):
+    """period = motion cycle length in seconds (defaults to `seconds` -> exact seamless loop).
+    A separate `period` lets a short preview show the real (slow) speed."""
     cfg = thumbnail.NICHES.get(niche, thumbnail.NICHES["focus"])
     rng = np.random.default_rng(seed * 7 + 3)
     sc = H / 1080.0
+    T = float(period or seconds)
 
     # base scene rendered with margin so zoom/pan never reveals an edge
-    MRG = 1.08
+    MRG = 1.13
     BW, BH = int(W * MRG), int(H * MRG)
     scene = thumbnail.build_scene(niche, seed, BW, BH).convert("RGB")
 
@@ -42,41 +45,46 @@ def frames(niche, W, H, fps, seconds, seed):
     text_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     thumbnail.draw_headline(text_layer, niche, seed, word=word, sub=sub, wordmark=True)
 
-    # dust particles
-    n = int(80 * (W * H) / (1920 * 1080)) + 40
+    # dust particles (softer + bigger so any residual stepping is imperceptible)
+    n = int(70 * (W * H) / (1920 * 1080)) + 30
     bx = rng.uniform(0, W, n)
     by = rng.uniform(0, H * 0.95, n)
     depth = rng.uniform(0.30, 1.0, n)          # far(small/dim) .. near(big/bright)
-    amp = (7 + depth * 24) * sc                 # drift amplitude (px)
+    amp = (10 + depth * 34) * sc                # drift amplitude (px)
     phx = rng.uniform(0, 6.283, n)
     phy = rng.uniform(0, 6.283, n)
     kx = rng.integers(1, 3, n)                  # integer harmonics -> periodic over loop
     ky = rng.integers(1, 3, n)
     col = tuple(cfg["moon"])
-    sprites = [_dot((5 + depth[i] * 15) * sc, col, 0.22 + depth[i] * 0.5) for i in range(n)]
+    ss = 2                                        # dust supersample -> sub-pixel smooth drift
+    sprites = [_dot((7 + depth[i] * 17) * sc * ss, col, 0.20 + depth[i] * 0.45) for i in range(n)]
 
     N = int(round(seconds * fps))
     for i in range(N):
-        ang = 2 * np.pi * (i / N)               # one full period over the whole loop
-        # breathing zoom in [1.0 .. ~1.056] + gentle micro-pan (all periodic)
-        z = 1.0 + 0.028 * (1 - np.cos(ang))
+        ang = 2 * np.pi * (i / (fps * T))       # one full cycle every T seconds
+        # breathing zoom in [1.0 .. ~1.05] + gentle micro-pan (all periodic, eased)
+        z = 1.0 + 0.042 * (1 - np.cos(ang))
         cw, ch = W / z, H / z
-        panx = (BW - cw) * (0.5 + 0.12 * np.sin(ang))
-        pany = (BH - ch) * (0.5 + 0.10 * np.sin(ang + 1.1))
+        panx = (BW - cw) * (0.5 + 0.17 * np.sin(ang))
+        pany = (BH - ch) * (0.5 + 0.14 * np.sin(ang + 1.1))
         panx = min(max(panx, 0.0), BW - cw)
         pany = min(max(pany, 0.0), BH - ch)
-        fr = scene.crop((int(panx), int(pany), int(panx + cw), int(pany + ch))) \
-                  .resize((W, H), Image.BILINEAR).convert("RGBA")
-        # floating dust (paste = clip/negative-safe)
+        # SUB-PIXEL zoom/pan via affine sampling (BICUBIC) -> smooth, no pixel stair-stepping
+        fr = scene.transform((W, H), Image.AFFINE, (cw / W, 0, panx, 0, ch / H, pany),
+                             resample=Image.BICUBIC).convert("RGBA")
+        # floating dust on a 2x layer -> downscaled = sub-pixel smooth
+        ov = Image.new("RGBA", (W * ss, H * ss), (0, 0, 0, 0))
         for k in range(n):
-            x = bx[k] + amp[k] * np.sin(ang * kx[k] + phx[k])
-            y = by[k] + amp[k] * 0.7 * np.sin(ang * ky[k] + phy[k])
+            x = (bx[k] + amp[k] * np.sin(ang * kx[k] + phx[k])) * ss
+            y = (by[k] + amp[k] * 0.7 * np.sin(ang * ky[k] + phy[k])) * ss
             sp = sprites[k]
-            fr.paste(sp, (int(x - sp.width / 2), int(y - sp.height / 2)), sp)
-        # text slowly circling (a few px orbit)
-        dx = int(9 * sc * np.cos(ang))
-        dy = int(7 * sc * np.sin(ang))
-        fr.paste(text_layer, (dx, dy), text_layer)
+            ov.paste(sp, (int(x - sp.width / 2), int(y - sp.height / 2)), sp)
+        fr.alpha_composite(ov.resize((W, H), Image.LANCZOS))
+        # text slowly circling (sub-pixel float orbit via affine translate)
+        dx = 9 * sc * np.cos(ang)
+        dy = 7 * sc * np.sin(ang)
+        fr.alpha_composite(text_layer.transform((W, H), Image.AFFINE, (1, 0, -dx, 0, 1, -dy),
+                                                 resample=Image.BICUBIC))
         yield np.asarray(fr.convert("RGB"), dtype=np.uint8)
 
 
