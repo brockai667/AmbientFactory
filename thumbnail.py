@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Lumora thumbnail generator — 1280x720 clickbait-but-tasteful thumbnails for ambient music.
-Consistent "world" per brand (aurora sky + layered mountain silhouettes + glowing Lumora moon)
-+ big mood headline (<=3 words) + sub-label + duration + LUMORA wordmark. One dominant subject,
-high contrast, mobile-legible. Per-niche palette + rotating mood words (seeded).
-
-make(niche, minutes, seed, out_path) -> saves a JPG (<2MB) ready as a YouTube thumbnail.
-"""
-import os, math
+"""Lumora thumbnail + scene generator.
+Consistent "world" per brand (aurora sky + layered mountain silhouettes + glowing Lumora moon).
+`build_scene()` = the pure animated-able background (no text) — reused by visual.py for the video.
+`make()` = 1280x720 thumbnail (scene + big mood headline + sub + duration pill + LUMORA wordmark).
+Per-niche palette + rotating mood words (seeded)."""
+import os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(ROOT, "fonts")
-W, H = 1280, 720
 
 NICHES = {
     "focus": {
@@ -76,25 +73,88 @@ def _ridge(width, amp, rough, rng, base):
     return base + h[xi] * (1 - xf) + h[xi2] * xf
 
 
-def _orb(cx, cy, R, color, halo=2.4):
+def _orb(W, H, cx, cy, R, color, halo=2.4):
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     r = np.hypot(xx - cx, yy - cy)
     glow = np.exp(-(r / (R * halo)) ** 2) * 0.9
     body = np.clip((R - r) / max(R * 0.14, 1) + 1, 0, 1)
     a = np.maximum(body, glow)
     rgb = np.ones((H, W, 3), np.float32) * np.array(color, np.float32)
-    # brighten toward core
     rgb += (np.exp(-(r / (R * 0.7)) ** 2) * 25)[..., None]
     return _layer(rgb, a)
 
 
+def build_scene(niche, seed, W, H):
+    """The pure Lumora world (NO text) — aurora sky + stars + glowing moon + mountain
+    silhouettes + haze + vignette. 16:9. Reused by the thumbnail AND the long-form video."""
+    cfg = NICHES.get(niche, NICHES["focus"])
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+
+    # sky gradient + horizon glow
+    top = np.array(cfg["sky"][0], np.float32)
+    bot = np.array(cfg["sky"][1], np.float32)
+    t = (yy / H)[..., None]
+    sky = top[None, None] * (1 - t) + bot[None, None] * t
+    horizon = np.exp(-((yy - H * 0.72) / (H * 0.28)) ** 2) * 0.35
+    sky += horizon[..., None] * np.array(cfg["aurora"][1], np.float32) * 0.5
+    base = Image.fromarray(np.clip(sky, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+
+    # aurora bands
+    for i, col in enumerate(cfg["aurora"]):
+        yc = H * (0.28 + 0.14 * i) + rng.uniform(-20, 20)
+        amp = rng.uniform(30, 60) * (H / 720)
+        thick = rng.uniform(40, 70) * (H / 720)
+        freq = rng.uniform(1.2, 2.2)
+        phase = rng.uniform(0, 6.28)
+        line = yc + amp * np.sin(xx / W * np.pi * freq + phase)
+        a = np.exp(-((yy - line) / thick) ** 2) * 0.5
+        base.alpha_composite(_layer(np.array(col, np.float32), a).filter(ImageFilter.GaussianBlur(8)))
+
+    # stars
+    stars = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(stars)
+    for _ in range(int(150 * (W * H) / (1280 * 720))):
+        sx_, sy_ = rng.uniform(0, W), rng.uniform(0, H * 0.62)
+        rad = rng.uniform(0.5, 1.8) * (H / 720)
+        al = int(rng.uniform(30, 160))
+        sd.ellipse([sx_ - rad, sy_ - rad, sx_ + rad, sy_ + rad], fill=(230, 240, 255, al))
+    base.alpha_composite(stars.filter(ImageFilter.GaussianBlur(0.5)))
+
+    # moon (glowing Lumora light), rule-of-thirds upper-right
+    mR = 60 * (H / 720)
+    base.alpha_composite(_orb(W, H, W * 0.70, H * 0.30, mR, cfg["moon"]))
+
+    # mountain silhouettes (3 layers, atmospheric perspective + moon rim light)
+    layers = [(H * 0.60, 70, 0.62, 0.28), (H * 0.72, 95, 0.58, 0.15), (H * 0.86, 120, 0.55, 0.0)]
+    fog = np.array(cfg["aurora"][1], np.float32)
+    for base_y, amp, rough, fogmix in layers:
+        heights = _ridge(W, amp * (H / 720), rough, rng, base_y)
+        mask = (yy >= heights[None, :]).astype(np.float32)
+        col = np.array([7, 9, 16], np.float32) * (1 - fogmix) + fog * fogmix * 0.5
+        mtn = _layer(np.ones((H, W, 3), np.float32) * col, mask * (0.90 + 0.1 * fogmix))
+        edge = np.clip(mask - np.roll(mask, int(3 * H / 720), axis=0), 0, 1)
+        edge[:4] = 0
+        side = np.clip((xx - (W * 0.35)) / (W * 0.5), 0, 1)
+        rim = _layer(np.array(cfg["moon"], np.float32), edge * side * 0.5).filter(ImageFilter.GaussianBlur(1.5))
+        base.alpha_composite(mtn)
+        base.alpha_composite(rim)
+
+    # foreground haze + vignette
+    haze = np.exp(-((H - yy) / (H * 0.22)) ** 2) * 0.22
+    base.alpha_composite(_layer(fog, haze))
+    vig = ((np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2))) ** 2 * 0.55)
+    base.alpha_composite(_layer(np.array([0, 0, 0], np.float32), np.clip(vig, 0, 0.7)))
+    return base
+
+
 def _draw_text(base, xy, text, font, fill, anchor="la",
-               glow=None, glow_r=14, shadow=(0, 0, 0), sx=4, sy=6, spacing=0):
-    """Draw text with drop shadow + optional colored glow (for pop/contrast)."""
+               glow=None, glow_r=14, shadow=(0, 0, 0), sx=4, sy=6):
+    """Text with drop shadow + optional colored glow (pop/contrast)."""
+    W, H = base.size
     if glow is not None:
         gl = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        gd = ImageDraw.Draw(gl)
-        gd.text(xy, text, font=font, fill=glow + (255,), anchor=anchor)
+        ImageDraw.Draw(gl).text(xy, text, font=font, fill=glow + (255,), anchor=anchor)
         gl = gl.filter(ImageFilter.GaussianBlur(glow_r))
         base.alpha_composite(gl)
         base.alpha_composite(gl)
@@ -111,124 +171,69 @@ def _spread(text, n=1):
     return (" " * n).join(list(text))
 
 
-def make(niche, minutes, seed, out_path, title=None):
+def pick_text(niche, seed):
+    """Deterministic mood word + sub for a niche+seed (so thumbnail & video match)."""
     cfg = NICHES.get(niche, NICHES["focus"])
     rng = np.random.default_rng(seed)
-    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    return (cfg["words"][int(rng.integers(0, len(cfg["words"])))],
+            cfg["subs"][int(rng.integers(0, len(cfg["subs"])))])
 
-    # 1) SKY gradient (vertical) + horizon glow
-    top = np.array(cfg["sky"][0], np.float32)
-    bot = np.array(cfg["sky"][1], np.float32)
-    t = (yy / H)[..., None]
-    sky = top[None, None] * (1 - t) + bot[None, None] * t
-    horizon = np.exp(-((yy - H * 0.72) / (H * 0.28)) ** 2) * 0.35
-    sky += horizon[..., None] * np.array(cfg["aurora"][1], np.float32) * 0.5
-    base = Image.fromarray(np.clip(sky, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
 
-    # 2) AURORA bands (curved glowing streaks in upper sky)
-    for i, col in enumerate(cfg["aurora"]):
-        yc = H * (0.28 + 0.14 * i) + rng.uniform(-20, 20)
-        amp = rng.uniform(30, 60)
-        thick = rng.uniform(40, 70)
-        freq = rng.uniform(1.2, 2.2)
-        phase = rng.uniform(0, 6.28)
-        line = yc + amp * np.sin(xx / W * np.pi * freq + phase)
-        a = np.exp(-((yy - line) / thick) ** 2) * 0.5
-        base.alpha_composite(_layer(np.array(col, np.float32), a).filter(ImageFilter.GaussianBlur(8)))
-
-    # 3) STARS (upper sky)
-    stars = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(stars)
-    for _ in range(150):
-        sx_, sy_ = rng.uniform(0, W), rng.uniform(0, H * 0.62)
-        rad = rng.uniform(0.5, 1.8)
-        al = int(rng.uniform(30, 160))
-        sd.ellipse([sx_ - rad, sy_ - rad, sx_ + rad, sy_ + rad], fill=(230, 240, 255, al))
-    base.alpha_composite(stars.filter(ImageFilter.GaussianBlur(0.5)))
-
-    # 4) MOON (glowing Lumora light), rule-of-thirds upper-right
-    mcx, mcy, mR = W * 0.70, H * 0.30, 60
-    base.alpha_composite(_orb(mcx, mcy, mR, cfg["moon"]))
-
-    # 5) MOUNTAIN silhouettes (3 layers, atmospheric perspective + moon rim light)
-    layers = [
-        (H * 0.60, 70, 0.62, 0.28),   # far  (base_y, amp, rough, fog_mix)
-        (H * 0.72, 95, 0.58, 0.15),
-        (H * 0.86, 120, 0.55, 0.0),   # near (darkest)
-    ]
-    fog = np.array(cfg["aurora"][1], np.float32)
-    for base_y, amp, rough, fogmix in layers:
-        heights = _ridge(W, amp, rough, rng, base_y)
-        mask = (yy >= heights[None, :]).astype(np.float32)
-        col = np.array([7, 9, 16], np.float32) * (1 - fogmix) + fog * fogmix * 0.5
-        mtn = _layer(np.ones((H, W, 3), np.float32) * col, mask * (0.90 + 0.1 * fogmix))
-        # rim light on the top edge, tinted by moon (light comes from moon side)
-        edge = np.clip(mask - np.roll(mask, 3, axis=0), 0, 1)
-        edge[:4] = 0
-        side = np.clip((xx - (W * 0.35)) / (W * 0.5), 0, 1)   # brighter toward moon (right)
-        rim = _layer(np.array(cfg["moon"], np.float32), edge * side * 0.5).filter(ImageFilter.GaussianBlur(1.5))
-        base.alpha_composite(mtn)
-        base.alpha_composite(rim)
-
-    # 6) foreground haze + vignette
-    haze = np.exp(-((H - yy) / (H * 0.22)) ** 2) * 0.22
-    base.alpha_composite(_layer(fog, haze))
-    vig = ((np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2))) ** 2 * 0.55)
-    base.alpha_composite(_layer(np.array([0, 0, 0], np.float32), np.clip(vig, 0, 0.7)))
-
-    # 7) TEXT — big mood headline (stacked words), lower-left
-    word = title or cfg["words"][int(rng.integers(0, len(cfg["words"])))]
-    sub = cfg["subs"][int(rng.integers(0, len(cfg["subs"])))]
+def draw_headline(base, niche, seed, word=None, sub=None, wordmark=True):
+    """Draw the big mood headline (+ optional sub + LUMORA wordmark) onto `base`.
+    Scales with base height. Used by the thumbnail and the video overlay."""
+    W, H = base.size
+    k = H / 720.0
+    cfg = NICHES.get(niche, NICHES["focus"])
+    if word is None or sub is None:
+        word, sub = pick_text(niche, seed)
+    accent = tuple(cfg["accent"])
     parts = word.split()
-    if len(parts) >= 3:
-        lines = [" ".join(parts[:-1]), parts[-1]]
-    else:
-        lines = parts
-    # adaptive font size so widest line fits
-    size = 150
-    while size > 70:
+    lines = [" ".join(parts[:-1]), parts[-1]] if len(parts) >= 3 else parts
+    size = int(150 * k)
+    while size > int(70 * k):
         f = _font("Anton-Regular.ttf", size)
         widest = max(ImageDraw.Draw(base).textlength(ln, font=f) for ln in lines)
         if widest <= W * 0.62:
             break
-        size -= 6
+        size -= int(6 * k) or 1
     fbig = _font("Anton-Regular.ttf", size)
     lh = int(size * 1.02)
-    total = lh * len(lines)
-    y0 = int(H * 0.90) - total
-    accent = tuple(cfg["accent"])
+    y0 = int(H * 0.90) - lh * len(lines)
     for i, ln in enumerate(lines):
-        col = (255, 255, 255) if i == 0 else accent
-        _draw_text(base, (66, y0 + i * lh), ln, fbig, col, anchor="la",
-                   glow=accent, glow_r=16)
+        _draw_text(base, (int(66 * k), y0 + i * lh), ln, fbig,
+                   (255, 255, 255) if i == 0 else accent, glow=accent, glow_r=int(16 * k))
+    _draw_text(base, (int(72 * k), y0 - int(46 * k)), _spread(sub, 1),
+               _font("Poppins-Bold.ttf", int(34 * k)), (232, 238, 250), shadow=(0, 0, 0), sx=2, sy=3)
+    if wordmark:
+        fmark = _font("Poppins-Bold.ttf", int(34 * k))
+        dl = ImageDraw.Draw(base)
+        mark = _spread("LUMORA", 2)
+        mw = dl.textlength(mark, font=fmark)
+        mx, my = W - int(66 * k) - mw, int(70 * k)
+        dl.ellipse([mx - 40 * k, my - 15 * k, mx - 12 * k, my + 13 * k], fill=accent + (255,))
+        dl.ellipse([mx - 34 * k, my - 9 * k, mx - 18 * k, my + 7 * k], fill=(255, 255, 255, 230))
+        _draw_text(base, (mx, my), mark, fmark, (240, 244, 252), anchor="lm", shadow=(0, 0, 0), sx=1, sy=2)
 
-    # sub-label above headline
-    fsub = _font("Poppins-Bold.ttf", 34)
-    _draw_text(base, (72, y0 - 46), _spread(sub, 1), fsub, (232, 238, 250),
-               anchor="la", glow=None, shadow=(0, 0, 0), sx=2, sy=3)
 
-    # duration pill (top-left, out of the bottom-right duration stamp zone)
+def make(niche, minutes, seed, out_path, title=None):
+    """1280x720 thumbnail = scene + headline + duration pill + wordmark."""
+    W, H = 1280, 720
+    base = build_scene(niche, seed, W, H)
+    word, sub = pick_text(niche, seed)
+    if title:
+        word = title
+    draw_headline(base, niche, seed, word=word, sub=sub, wordmark=True)
+    # duration pill (top-left)
+    cfg = NICHES.get(niche, NICHES["focus"])
+    accent = tuple(cfg["accent"])
     mins = int(minutes)
     dur = (f"{mins // 60} HOUR" + ("S" if mins >= 120 else "")) if mins >= 60 else f"{mins} MIN"
     fdur = _font("Poppins-Bold.ttf", 30)
     dl = ImageDraw.Draw(base)
     dw = dl.textlength(dur, font=fdur)
-    px, py = 66, 54
-    dl.rounded_rectangle([px, py, px + dw + 40, py + 52], radius=26,
-                         fill=accent + (235,))
-    dl.text((px + 20, py + 26), dur, font=fdur, fill=(12, 14, 22, 255), anchor="lm")
-
-    # LUMORA wordmark (top-right, with a mini orb dot)
-    fmark = _font("Poppins-Bold.ttf", 34)
-    mark = "LUMORA"
-    mw = dl.textlength(_spread(mark, 2), font=fmark)
-    mx = W - 66 - mw
-    my = 70
-    dl.ellipse([mx - 40, my - 15, mx - 12, my + 13], fill=accent + (255,))
-    dl.ellipse([mx - 34, my - 9, mx - 18, my + 7], fill=(255, 255, 255, 230))
-    _draw_text(base, (mx, my), _spread(mark, 2), fmark, (240, 244, 252),
-               anchor="lm", glow=None, shadow=(0, 0, 0), sx=1, sy=2)
-
+    dl.rounded_rectangle([66, 54, 66 + dw + 40, 106], radius=26, fill=accent + (235,))
+    dl.text((86, 80), dur, font=fdur, fill=(12, 14, 22, 255), anchor="lm")
     base.convert("RGB").save(out_path, "JPEG", quality=90)
     return out_path
 

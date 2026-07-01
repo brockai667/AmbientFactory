@@ -12,6 +12,7 @@ import os, sys, subprocess
 import ambient as A
 import music
 import thumbnail
+import visual
 
 OUT, TMP, FF = A.OUT, A.TMP, A.FF
 SR = 48000
@@ -32,7 +33,7 @@ def render_visual_loop(niche, path, seed=7):
            "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-g", str(fps * 2),
            "-maxrate", "6M", "-bufsize", "12M", "-pix_fmt", "yuv420p", "-movflags", "+faststart", path]
     pr = subprocess.Popen(cmd, stdin=subprocess.PIPE); nf = int(fps * VIS_LOOP); last = None
-    for i, fr in enumerate(A.flow_field(niche, W, H, fps, VIS_LOOP, seed=seed)):
+    for i, fr in enumerate(visual.frames(niche, W, H, fps, VIS_LOOP, seed=seed)):
         pr.stdin.write(fr.tobytes()); last = fr
         if i % 90 == 0:
             print(f"    vizual {i}/{nf}")
