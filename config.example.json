@@ -1,0 +1,18 @@
+{
+  "_secrets": "Lokalne sem (config.json je gitignored), v cloude cez GitHub Actions secrets (ENV). NIKDY necommituj config.json.",
+
+  "youtube_client_id": "",
+  "youtube_client_secret": "",
+
+  "_niches": "enabled = bezi v dennom behu; minutes = dlzka videa; youtube_refresh_token = OAuth daneho kanala (alebo ENV YT_REFRESH_<NIKA>).",
+  "niches": {
+    "focus": {"enabled": true,  "minutes": 60,  "youtube_refresh_token": ""},
+    "study": {"enabled": true,  "minutes": 60,  "youtube_refresh_token": ""},
+    "sleep": {"enabled": true,  "minutes": 180, "youtube_refresh_token": ""}
+  },
+
+  "_optional_suno": "Neskor: plny auto cez Suno API (lofi/melodicke kanaly). Teraz zadarmo cez vlastny generator.",
+  "suno_provider": "generic",
+  "suno_base_url": "https://api.sunoapi.org",
+  "suno_api_key": ""
+}

@@ -1,0 +1,10 @@
+# lokalny config s tajomstvami (suno_api_key, youtube OAuth) - cloud pouziva ENV/secrets
+config.json
+settings.json
+
+# generovane / docasne / velke
+output/
+albums/
+temp/
+__pycache__/
+*.pyc

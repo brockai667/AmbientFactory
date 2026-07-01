@@ -1,0 +1,51 @@
+name: Ambient (Lull) Daily
+
+on:
+  schedule:
+    - cron: "0 2 * * *"     # 02:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ambient-daily
+  cancel-in-progress: false
+
+jobs:
+  render-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 320
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg + fonts
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+
+      - name: Install Python deps
+        run: pip install numpy pillow requests
+
+      - name: Prepare config
+        run: cp config.example.json config.json
+
+      - name: Render + upload (focus, study, sleep)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YT_REFRESH_FOCUS: ${{ secrets.YT_REFRESH_FOCUS }}
+          YT_REFRESH_STUDY: ${{ secrets.YT_REFRESH_STUDY }}
+          YT_REFRESH_SLEEP: ${{ secrets.YT_REFRESH_SLEEP }}
+        run: python daily.py
+
+      - name: Persist state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          rm -f config.json
+          git add used.json 2>/dev/null || true
+          git commit -m "state: ambient run $(date -u +%F)" || echo "no changes to commit"
+          git push || echo "nothing to push"
