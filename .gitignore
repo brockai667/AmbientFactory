@@ -8,3 +8,8 @@ albums/
 temp/
 __pycache__/
 *.pyc
+
+# money-glitch temp media
+vo.mp3
+vo.wav
+*.mp4

@@ -66,14 +66,14 @@ def upload(tok, mp4, title, description, tags, category="10", privacy="public"):
     return {}
 
 
-def upload_video(mp4, meta, refresh_token, jpg=None, client_id=None, client_secret=None):
+def upload_video(mp4, meta, refresh_token, jpg=None, client_id=None, client_secret=None, category="22"):
     cid = client_id or _cfg("YOUTUBE_CLIENT_ID")
     csec = client_secret or _cfg("YOUTUBE_CLIENT_SECRET")
     if not (cid and csec and refresh_token):
         raise RuntimeError("Chybaju YouTube OAuth udaje (client id/secret/refresh token).")
     tok = access_token(cid, csec, refresh_token)
     print(f"  nahravam: {meta['title']}")
-    res = upload(tok, mp4, meta["title"], meta["description"], meta["tags"])
+    res = upload(tok, mp4, meta["title"], meta["description"], meta["tags"], category=category)
     vid = res.get("id")
     print(f"  OK: https://www.youtube.com/watch?v={vid}")
     try:
