@@ -171,15 +171,16 @@ def build_audio(steps,tmp):
                 elif ch["type"]=="SentenceBoundary": sents.append((ch["offset"]/1e7,ch["duration"]/1e7))
         return sents
     sents=asyncio.run(synth()); pcm=_decode(mp3); a=pcm/(np.max(np.abs(pcm)) or 1)*0.95
+    a=np.concatenate([a, np.zeros(int(0.5*SR),dtype=np.float32)])   # chvost ticha -> audio >= video (ziadny -shortest orez -> ziadny broken pipe)
     wav=os.path.join(tmp,"vo.wav")
     with wave.open(wav,"wb") as wf:
         wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(SR); wf.writeframes((a*32767).astype("<i2").tobytes())
+    total=len(a)/SR
     if len(sents)==len(steps):
-        starts=[s[0] for s in sents]; total=sents[-1][0]+sents[-1][1]
+        starts=[s[0] for s in sents]
     else:
-        L=[len(s["vo"]) for s in steps]; tot=sum(L) or 1; T=len(a)/SR; acc=0.0; starts=[]
-        for l in L: starts.append(acc/tot*T); acc+=l
-        total=T
+        L=[len(s["vo"]) for s in steps]; tot=sum(L) or 1; acc=0.0; starts=[]
+        for l in L: starts.append(acc/tot*total); acc+=l
     return a,starts,wav,total
 def lip_env(a,n):
     win=SR//FPS; env=np.zeros(n)
@@ -238,7 +239,7 @@ def render(scheme, out_path, tmp=None):
     tmp=tmp or os.path.dirname(os.path.abspath(out_path)) or "."
     steps=scheme["steps"]
     audio,starts,wav,total=build_audio(steps,tmp)
-    n=int((total+0.5)*FPS); env=lip_env(audio,n)
+    n=int(total*FPS); env=lip_env(audio,n)
     def step_at(tt):
         i=0
         for k,s in enumerate(starts):
@@ -255,6 +256,14 @@ def render(scheme, out_path, tmp=None):
         tt=f/FPS; ci=step_at(tt); tin=tt-starts[ci]; fr=PAPER_IMG.copy(); d=ImageDraw.Draw(fr)
         _scene(fr,d,steps[ci],tin,env[f],1 if f in blink else 0)
         pop(fr,(540,300),steps[ci]["cap"],FCAP,INK,max(0,min(1,tin/0.25)))
-        fr.paste(_WM,(0,H-120),_WM); p.stdin.write(fr.tobytes())
-    p.stdin.close(); p.wait()
+        fr.paste(_WM,(0,H-120),_WM)
+        try:
+            p.stdin.write(fr.tobytes())
+        except (BrokenPipeError, OSError):
+            break
+    try:
+        p.stdin.close()
+    except (BrokenPipeError, OSError):
+        pass
+    p.wait()
     return out_path
