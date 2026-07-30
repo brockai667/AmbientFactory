@@ -36,6 +36,7 @@ jobs:
       - name: Render + upload money-glitch reel
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUFFER_TOKEN: ${{ secrets.BUFFER_TOKEN }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YT_REFRESH_FOCUS: ${{ secrets.YT_REFRESH_FOCUS }}

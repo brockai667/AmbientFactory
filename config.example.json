@@ -9,5 +9,8 @@
     "focus": {"enabled": true, "youtube_refresh_token": ""},
     "study": {"enabled": true, "youtube_refresh_token": ""},
     "sleep": {"enabled": true, "youtube_refresh_token": ""}
-  }
+  },
+
+  "_buffer": "TikTok+IG cez Buffer (YouTube ide priamo). buffer_token = ENV BUFFER_TOKEN (secret). buffer_channels = zoznam {\"id\":\"...\",\"service\":\"tiktok\"|\"instagram\",\"name\":\"...\"} Buffer profilov. Kym prazdne -> TikTok/IG sa TICHO preskoci. TODO: vytvor ucty Money Glitch na TikTok+IG, prepoj ich do Buffera, dopln sem profile IDs.",
+  "buffer_channels": []
 }

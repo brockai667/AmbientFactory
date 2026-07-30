@@ -12,6 +12,7 @@ from PIL import ImageDraw
 import glitch_engine as ge
 import schemes
 import glitch_gen
+import buffer_post
 import youtube_upload as yt
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +26,7 @@ def cfg():
     c = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
     c["youtube_client_id"] = os.environ.get("YOUTUBE_CLIENT_ID", c.get("youtube_client_id", ""))
     c["youtube_client_secret"] = os.environ.get("YOUTUBE_CLIENT_SECRET", c.get("youtube_client_secret", ""))
+    c["buffer_token"] = os.environ.get("BUFFER_TOKEN", c.get("buffer_token", ""))
     return c
 
 
@@ -112,6 +114,10 @@ def _do(niche, rtok, c):
             print(f"  UPLOAD ZLYHAL ({niche}):", e)
     else:
         print(f"  [pozn.] {niche}: chyba token -> len render (sample), neuploadujem")
+    try:                                                    # cross-post na TikTok+IG cez Buffer (graceful ak nenastavene)
+        buffer_post.post_social(c, out, meta["title"], meta["description"])
+    except Exception as e:
+        print("  [Buffer] preskoceny:", str(e)[:120])
     for p in (out, thumb):
         try:
             if rtok:
