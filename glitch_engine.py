@@ -12,7 +12,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 FONT = os.path.join(ROOT, "fonts", "PatrickHand-Regular.ttf")
 W, H, FPS, SR = 1080, 1920, 30, 44100
 VOICE, RATE = "en-US-AndrewNeural", "-4%"
-BRAND = "@dailymoneyloops"      # placeholder watermark (mozes zmenit)
+BRAND = "@moneyglitch"          # znacka: Money Glitch
 
 def _ffmpeg():
     p = shutil.which("ffmpeg")

@@ -11,6 +11,7 @@ import json, os, random, sys, time
 from PIL import ImageDraw
 import glitch_engine as ge
 import schemes
+import glitch_gen
 import youtube_upload as yt
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -49,9 +50,10 @@ def pick_scheme():
     return random.choice(pool)
 
 
-def mark_used(sid, niche, vid):
+def mark_used(sch, niche, vid):
     data = _load()
-    data.append({"scheme": sid, "niche": niche, "video_id": vid, "ts": time.strftime("%Y-%m-%d %H:%M")})
+    data.append({"scheme": sch["id"], "title": sch.get("title", ""), "niche": niche,
+                 "video_id": vid, "ts": time.strftime("%Y-%m-%d %H:%M")})
     json.dump(data, open(USED, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
 
@@ -91,7 +93,8 @@ def make_thumb(scheme, path):
 
 
 def _do(niche, rtok, c):
-    sch = pick_scheme()
+    avoid = [x.get("title", "") for x in _load()][-40:]
+    sch = glitch_gen.generate(avoid) or pick_scheme()      # AUTO-gen (LLM+kontrola) alebo fallback na rucnu banku
     os.makedirs(OUTDIR, exist_ok=True)
     out = os.path.join(OUTDIR, f"{niche}_{sch['id']}.mp4")
     thumb = out[:-4] + ".jpg"
@@ -104,7 +107,7 @@ def _do(niche, rtok, c):
             vid = yt.upload_video(out, meta, rtok, jpg=thumb,
                                   client_id=c["youtube_client_id"],
                                   client_secret=c["youtube_client_secret"], category="22")
-            mark_used(sch["id"], niche, vid)
+            mark_used(sch, niche, vid)
         except Exception as e:
             print(f"  UPLOAD ZLYHAL ({niche}):", e)
     else:
