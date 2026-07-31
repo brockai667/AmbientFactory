@@ -11,8 +11,8 @@ Token: ENV MODELS_TOKEN alebo GITHUB_TOKEN (Actions s permission models:read).""
 import os, json, re, time, urllib.request
 from glitch_engine import ICONS
 
-MODEL = os.environ.get("GLITCH_MODEL", "openai/gpt-4o-mini")
-ENDPOINT = "https://models.github.ai/inference/chat/completions"
+MODEL = os.environ.get("GLITCH_MODEL") or os.environ.get("MODELS_MODEL", "llama-3.3-70b-versatile")
+ENDPOINT = os.environ.get("MODELS_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/") + "/chat/completions"
 ICON_NAMES = set(ICONS.keys())
 
 def _token():
