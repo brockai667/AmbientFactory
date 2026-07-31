@@ -49,6 +49,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           rm -f config.json
-          git add used.json 2>/dev/null || true
+          git add used.json bank.json 2>/dev/null || true
           git commit -m "state: glitch run $(date -u +%F)" || echo "no changes to commit"
           for _i in 1 2 3 4; do git pull --rebase -q origin main && git push -q && break || sleep 4; done

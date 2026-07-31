@@ -17,6 +17,7 @@ import youtube_upload as yt
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 USED = os.path.join(ROOT, "used.json")
+BANK = os.path.join(ROOT, "bank.json")   # rastuca banka schem (seed=schemes.SCHEMES, prirasta o auto-gen)
 OUTDIR = os.path.join(ROOT, "output")
 POSTS_PER_RUN = 1            # kolko videi na kanal za beh (zdvihni pre vyssiu kadenciu)
 
@@ -43,12 +44,34 @@ def used_ids():
     return set(x.get("scheme") for x in _load())
 
 
+def load_bank():
+    """Rastuca banka schem: seed z schemes.SCHEMES, potom prirasta o dobre auto-generovane (bank.json)."""
+    if os.path.exists(BANK):
+        try:
+            return json.load(open(BANK, encoding="utf-8"))
+        except Exception:
+            pass
+    data = [dict(s) for s in schemes.SCHEMES]
+    json.dump(data, open(BANK, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    return data
+
+
+def add_to_bank(sch):
+    """Prida dobru auto-generovanu schemu do banky (ak nie je duplikat titulu) -> banka rastie."""
+    bank = load_bank()
+    if any(glitch_gen._sim(sch["title"], b.get("title", "")) for b in bank):
+        return
+    bank.append(sch)
+    json.dump(bank, open(BANK, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    print(f"  [bank] +1 schema (banka ma teraz {len(bank)})")
+
+
 def pick_scheme():
-    used = used_ids()
-    pool = [s for s in schemes.SCHEMES if s["id"] not in used]
+    bank = load_bank(); used = used_ids()
+    pool = [s for s in bank if s["id"] not in used]
     if not pool:                                   # cely cyklus vycerpany -> reset rotacie
         json.dump([], open(USED, "w", encoding="utf-8"))
-        pool = schemes.SCHEMES
+        pool = bank
     return random.choice(pool)
 
 
@@ -96,7 +119,11 @@ def make_thumb(scheme, path):
 
 def _do(niche, rtok, c):
     avoid = [x.get("title", "") for x in _load()][-40:]
-    sch = glitch_gen.generate(avoid) or pick_scheme()      # AUTO-gen (LLM+kontrola) alebo fallback na rucnu banku
+    sch = glitch_gen.generate(avoid)                       # AUTO-gen (LLM + kontrola kvality)
+    if sch:
+        add_to_bank(sch)                                   # dobra generovana schema -> prirastie do RASTUCEJ banky
+    else:
+        sch = pick_scheme()                                # fallback na (rastucu) banku
     os.makedirs(OUTDIR, exist_ok=True)
     out = os.path.join(OUTDIR, f"{niche}_{sch['id']}.mp4")
     thumb = out[:-4] + ".jpg"
