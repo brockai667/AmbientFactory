@@ -1,0 +1,27 @@
+name: Rebrand channels (one-off)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  rebrand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install requests
+      - name: Set channel name + description
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YT_REFRESH_FOCUS: ${{ secrets.YT_REFRESH_FOCUS }}
+          YT_REFRESH_STUDY: ${{ secrets.YT_REFRESH_STUDY }}
+          YT_REFRESH_SLEEP: ${{ secrets.YT_REFRESH_SLEEP }}
+        run: python rebrand_channels.py
