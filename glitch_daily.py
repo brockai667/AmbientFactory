@@ -45,15 +45,24 @@ def used_ids():
 
 
 def load_bank():
-    """Rastuca banka schem: seed z schemes.SCHEMES, potom prirasta o dobre auto-generovane (bank.json)."""
+    """Rastuca banka schem: seed z schemes.SCHEMES, potom prirasta o dobre auto-generovane (bank.json).
+    Nove rucne seed-schemy (schemes.SCHEMES) sa VZDY dosiu, aj ked bank.json uz existuje."""
+    bank = []
     if os.path.exists(BANK):
         try:
-            return json.load(open(BANK, encoding="utf-8"))
+            bank = json.load(open(BANK, encoding="utf-8"))
         except Exception:
-            pass
-    data = [dict(s) for s in schemes.SCHEMES]
-    json.dump(data, open(BANK, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-    return data
+            bank = []
+    have = {b.get("id") for b in bank}
+    added = 0
+    for s in schemes.SCHEMES:                 # dosej vsetky nove rucne schemy podla id
+        if s.get("id") not in have:
+            bank.append(dict(s)); have.add(s.get("id")); added += 1
+    if added or not os.path.exists(BANK):
+        json.dump(bank, open(BANK, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        if added:
+            print(f"  [bank] dosiate {added} novych seed-schem (banka ma teraz {len(bank)})")
+    return bank
 
 
 def add_to_bank(sch):
