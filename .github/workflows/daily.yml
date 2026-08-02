@@ -2,7 +2,7 @@ name: Money Glitch Daily
 
 on:
   schedule:
-    - cron: "0 13 * * *"     # 13:00 UTC (denne 1 reel)
+    - cron: "47 2 * * *"     # 02:47 UTC = 04:47 Bratislava (v noci; denne 1 reel/kanal)
   workflow_dispatch: {}
 
 permissions:
