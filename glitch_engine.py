@@ -202,26 +202,93 @@ def paste_c(fr,tile,cx,cy,rev=1.0):
     if rev<1: tile=tile.resize((max(1,int(tile.width*(0.85+0.15*rev))),max(1,int(tile.height*(0.85+0.15*rev)))))
     fr.paste(tile,(int(cx-tile.width/2),int(cy-tile.height/2)),tile)
 
-def _scene(fr,d,st,tin,env,blink):
-    lay=st.get("layout","icon"); r=max(0,min(1,tin/0.28)); r2=max(0,min(1,(tin-0.28)/0.24))
-    num=st.get("num"); ncol=COL.get(st.get("col","green"),GREEN)
-    if lay=="mascot":
-        lv=int(round(env*5)); bob=int(3*math.sin(tin*1.6)); paste_c(fr,CHARS[(lv,blink)],540,1010+bob,1)
-    elif lay=="icon":
-        paste_c(fr,icon(st.get("icon","coin"),380),540,880 if num else 980,r)
-        if num: pop(fr,(540,1150),num,FNUM,ncol,r2,shadow=True)
+# ============= NOVE EFEKTY (schvalene): draw-on cisla, rucny cerveny kruh, wobble ikon, vinetacia+zrno, cha-ching =============
+def _ding(freq,dur):
+    t=np.linspace(0,dur,int(SR*dur),False)
+    y=np.sin(2*np.pi*freq*t)+0.6*np.sin(2*np.pi*freq*2.01*t)+0.3*np.sin(2*np.pi*freq*2.99*t)
+    return (y*np.exp(-t*7.0)).astype(np.float32)
+def _chaching():
+    a=_ding(1050,0.16); b=_ding(1560,0.5); out=np.zeros(int(SR*0.6),np.float32); out[:len(a)]+=a
+    o=int(SR*0.085); out[o:o+len(b)]+=b*0.9; return out/(np.max(np.abs(out)) or 1)*0.9
+CHA=_chaching()
+def _vignette():
+    yy,xx=np.mgrid[0:H,0:W]; dd=np.sqrt(((xx-W/2)/(W*0.62))**2+((yy-H/2)/(H*0.62))**2)
+    v=np.zeros((H,W,4),np.uint8); v[...,3]=np.clip((dd-0.62)*150,0,72).astype(np.uint8); return Image.fromarray(v,"RGBA")
+VIGN=_vignette()
+GRAIN=[np.random.default_rng(200+k).normal(0,5,(H,W,3)).astype(np.int16) for k in range(6)]
+def _fitn(text,font):
+    w=ImageDraw.Draw(Image.new("RGBA",(1,1))).textlength(text,font=font)
+    return font if w<=1000 else F(max(20,int(getattr(font,"size",80)*1000/w)))
+def _laytxt(text,font,color):
+    d0=ImageDraw.Draw(Image.new("RGBA",(1,1))); bb=d0.textbbox((0,0),text,font=font); tw,th=bb[2]-bb[0],bb[3]-bb[1]
+    lay=Image.new("RGBA",(tw+52,th+52),(0,0,0,0)); ld=ImageDraw.Draw(lay); ox,oy=26-bb[0],26-bb[1]
+    ld.text((ox+4,oy+5),text,font=font,fill=(0,0,0,60)); ld.text((ox,oy),text,font=font,fill=color+(255,)); return lay,tw,th
+def hl_circle(d,cx,cy,rx,ry,pc,seed=1):
+    pc=max(0.0,min(1.0,pc))
+    if pc<=0: return
+    rng=np.random.default_rng(seed); a0=-105.0; a1=a0+385.0*pc; N=max(2,int((a1-a0)/7)); pts=[]
+    for i in range(N+1):
+        ang=math.radians(a0+(a1-a0)*i/N); jm=1.0+float(rng.normal(0,0.014))
+        pts.append((cx+math.cos(ang)*rx*jm,cy+math.sin(ang)*ry*jm))
+    if len(pts)>=2: d.line(pts,fill=RED,width=10,joint="curve")
+def draw_number(fr,d,xy,text,font,ncol,tin,delay=0.30,seed=1):
+    font=_fitn(text,font); lay,tw,th=_laytxt(text,font,ncol); pw=max(0.0,min(1.0,(tin-delay)/0.45))
+    if pw>0:
+        left=int(xy[0]-lay.width//2); top=int(xy[1]-lay.height//2); rv=int(lay.width*pw)
+        crop=lay.crop((0,0,rv,lay.height)); fr.paste(crop,(left,top),crop)
+        if pw<1.0: d.ellipse((left+rv-6,xy[1]-6,left+rv+6,xy[1]+6),fill=(30,26,22))   # spicka pera
+    if ncol==GREEN: hl_circle(d,xy[0],xy[1],tw/2+52,th/2+36,(tin-delay-0.42)/0.5,seed=seed)   # cerveny kruh len na zeleny payoff
+def paste_wobble(fr,tile,cx,cy,f,phase=0.0,rev=1.0,adeg=1.8,apx=3.0):
+    if rev<1: tile=tile.resize((max(1,int(tile.width*(0.85+0.15*rev))),max(1,int(tile.height*(0.85+0.15*rev)))))
+    ang=adeg*math.sin(f/FPS*1.4+phase); t=tile.rotate(ang,resample=Image.BICUBIC,expand=True)
+    dx=apx*math.sin(f/FPS*0.9+phase*1.7); dy=apx*math.cos(f/FPS*1.15+phase)
+    fr.paste(t,(int(cx-t.width/2+dx),int(cy-t.height/2+dy)),t)
+def char_expr(level,blink,brow=0,smirk=0):
+    im=Image.new("RGBA",(TW,TH),(0,0,0,0)); d=ImageDraw.Draw(im)
+    d.polygon([(MCX-100,820),(MCX-100,724),(MCX,772),(MCX+100,724),(MCX+100,820)],fill=(92,118,158))
+    d.polygon([(MCX-42,820),(MCX-42,740),(MCX,780),(MCX+42,740),(MCX+42,820)],fill=(236,236,238))
+    for sx in (-1,1): d.ellipse((MCX+sx*150-24,398,MCX+sx*150+24,462),fill=SKIN,outline=SKIN_O,width=3)
+    d.ellipse((MCX-152,206,MCX+152,676),fill=SKIN,outline=SKIN_O,width=4)
+    d.chord((MCX-152,300,MCX-92,520),95,265,fill=HAIR); d.chord((MCX+92,300,MCX+152,520),275,85,fill=HAIR)
+    for sx in (-1,1):
+        ex=MCX+sx*68
+        if brow: d.line((ex-40,340,ex+38,330),fill=BROW,width=13)   # obocie hore (hook)
+        else: d.line((ex-42,364,ex+40,358),fill=BROW,width=13)
+    for sx in (-1,1):
+        ex=MCX+sx*68; ey=420
+        if blink: d.line((ex-33,ey+2,ex+33,ey+5),fill=DARK,width=7)
+        else:
+            d.ellipse((ex-35,ey-22,ex+35,ey+22),fill=WHITE,outline=SKIN_O,width=2)
+            d.chord((ex-37,ey-30,ex+37,ey+13),184,359,fill=SKIN); d.arc((ex-35,ey-20,ex+35,ey+20),187,357,fill=DARK,width=5)
+            d.ellipse((ex-12,ey-1,ex+12,ey+23),fill=DARK)
+        d.arc((ex-28,ey+16,ex+28,ey+46),20,160,fill=(198,170,142),width=4)
+    d.ellipse((MCX-22,470,MCX+22,524),fill=SKIN,outline=SKIN_O,width=3)
+    d.chord((MCX-78,520,MCX-2,582),0,180,fill=MUST); d.chord((MCX+2,520,MCX+78,582),0,180,fill=MUST)
+    my=612
+    if smirk: d.arc((MCX-34,my-26,MCX+46,my+16),198,352,fill=DARK,width=7)   # uskrn (koniec)
+    elif level<=0: d.line((MCX-32,my,MCX+32,my),fill=DARK,width=6)
+    else:
+        h=4+6.0*level; d.ellipse((MCX-30,my-h,MCX+30,my+h),fill=DARK); d.ellipse((MCX-12,my+2,MCX+12,my+h*0.7),fill=(150,70,66))
+    return im
+
+def _scene(fr,d,st,tin,env,blink,f):
+    lay=st.get("layout","icon"); r=max(0,min(1,tin/0.28))
+    num=st.get("num"); ncol=COL.get(st.get("col","green"),GREEN); sd=(sum(map(ord,str(num)))%997)+1
+    if lay=="icon":
+        paste_wobble(fr,icon(st.get("icon","coin"),380),540,880 if num else 980,f,rev=r)
+        if num: draw_number(fr,d,(540,1150),num,FNUM,ncol,tin,0.30,sd)
     elif lay=="icons":
         for k,(dx,dy) in enumerate([(-200,-10),(-70,40),(60,-20),(190,50),(20,-120)]):
-            paste_c(fr,icon(st.get("icon","coin"),185),540+dx,930+dy,min(1,(r*5-k)))
-        if num: pop(fr,(540,1230),num,FNUM,ncol,r2,shadow=True)
+            paste_wobble(fr,icon(st.get("icon","coin"),185),540+dx,930+dy,f,phase=k*1.3,rev=min(1,(r*5-k)))
+        if num: draw_number(fr,d,(540,1230),num,FNUM,ncol,tin,0.34,sd)
     elif lay=="two":
-        paste_c(fr,icon(st.get("a","dollar"),300),380,900,r)
+        paste_wobble(fr,icon(st.get("a","dollar"),300),380,900,f,rev=r)
         if r>0.5: arrow(d,(560,905),(700,905))
-        paste_c(fr,icon(st.get("b","cash"),300),790,900,r)
-        if num: pop(fr,(540,1180),num,FNUM,ncol,r2,shadow=True)
+        paste_wobble(fr,icon(st.get("b","cash"),300),790,900,f,phase=2.0,rev=r)
+        if num: draw_number(fr,d,(540,1180),num,FNUM,ncol,tin,0.30,sd)
     elif lay=="equation":
-        pop(fr,(540,830),st.get("eq",""),FEQ,INK,r);
-        if num: pop(fr,(540,1050),num,FNUM,ncol,r2,shadow=True)
+        draw_number(fr,d,(540,830),st.get("eq",""),FEQ,INK,tin,0.12,7)
+        if num: draw_number(fr,d,(540,1050),num,FNUM,ncol,tin,0.42,sd)
     elif lay=="loop":
         cx,cy,R=540,880,240; P=[(cx,cy-R),(cx+R,cy),(cx,cy+R),(cx-R,cy)]; ic=st.get("loop",["dollar","coin","cash","bag"])
         def edge(a,b,g=92):
@@ -229,8 +296,8 @@ def _scene(fr,d,st,tin,env,blink):
         if r>0.4:
             for i in range(4): edge(P[i-1],P[i]) if i>0 else edge(P[3],P[0])
         szs=[160,175,150,165]
-        for i,nm in enumerate(ic[:4]): paste_c(fr,icon(nm,szs[i]),*P[i],r)
-        if num: pop(fr,(cx,cy+R+150),num,FNUM,ncol,r2,shadow=True)
+        for i,nm in enumerate(ic[:4]): paste_wobble(fr,icon(nm,szs[i]),P[i][0],P[i][1],f,phase=i*1.6,rev=r)
+        if num: draw_number(fr,d,(cx,cy+R+150),num,FNUM,ncol,tin,0.34,sd)
 
 _WM=Image.new("RGBA",(W,60),(0,0,0,0)); ImageDraw.Draw(_WM).text((W/2,20),BRAND,font=FWM,fill=(150,150,150),anchor="mm")
 
@@ -239,6 +306,14 @@ def render(scheme, out_path, tmp=None):
     tmp=tmp or os.path.dirname(os.path.abspath(out_path)) or "."
     steps=scheme["steps"]
     audio,starts,wav,total=build_audio(steps,tmp)
+    sfx=np.zeros(len(audio),np.float32)                       # cha-ching len na zeleny payoff (ZIADNY scribble/bzz na kazdu vetu)
+    for i,st in enumerate(steps):
+        if st.get("num") and st.get("col","green")=="green":
+            t0=int((starts[i]+0.66)*SR)
+            if 0<=t0<len(sfx): seg=CHA[:len(sfx)-t0]; sfx[t0:t0+len(seg)]+=seg*0.5
+    mix=np.clip(audio*0.9+sfx,-1,1).astype(np.float32)        # premixuj hlas + cha-ching -> prepis wav
+    with wave.open(wav,"wb") as wf:
+        wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(SR); wf.writeframes((mix*32767).astype("<i2").tobytes())
     n=int(total*FPS); env=lip_env(audio,n)
     def step_at(tt):
         i=0
@@ -249,16 +324,23 @@ def render(scheme, out_path, tmp=None):
     while fb<n:
         for k in range(4): blink.add(fb+k)
         fb+=int(3.4*FPS)
+    hook_i=next((k for k,s in enumerate(steps) if s.get("layout")=="mascot"),0)   # prvy maskot = hook (obocie hore)
+    close_i=len(steps)-1                                                          # posledny krok = koniec (uskrn)
     p=subprocess.Popen([FFMPEG,"-y","-f","rawvideo","-pix_fmt","rgb24","-s",f"{W}x{H}","-r",str(FPS),
-        "-i","-","-i",wav,"-c:v","libx264","-preset","medium","-crf","20","-pix_fmt","yuv420p",
+        "-i","-","-i",wav,"-c:v","libx264","-preset","veryfast","-crf","21","-pix_fmt","yuv420p",
         "-c:a","aac","-b:a","160k","-shortest",out_path],stdin=subprocess.PIPE)
     for f in range(n):
-        tt=f/FPS; ci=step_at(tt); tin=tt-starts[ci]; fr=PAPER_IMG.copy(); d=ImageDraw.Draw(fr)
-        _scene(fr,d,steps[ci],tin,env[f],1 if f in blink else 0)
-        pop(fr,(540,300),steps[ci]["cap"],FCAP,INK,max(0,min(1,tin/0.25)))
-        fr.paste(_WM,(0,H-120),_WM)
+        tt=f/FPS; ci=step_at(tt); st=steps[ci]; tin=tt-starts[ci]; fr=PAPER_IMG.copy(); d=ImageDraw.Draw(fr); bl=1 if f in blink else 0
+        if st.get("layout","icon")=="mascot":
+            lv=int(round(env[f]*5)); bob=int(3*math.sin(tin*1.6))
+            paste_c(fr,char_expr(lv,bl,brow=1 if ci==hook_i else 0,smirk=1 if ci==close_i else 0),540,1010+bob,1)
+        else:
+            _scene(fr,d,st,tin,env[f],bl,f)
+        pop(fr,(540,300),st["cap"],FCAP,INK,max(0,min(1,tin/0.25)))
+        fr.paste(VIGN,(0,0),VIGN); fr.paste(_WM,(0,H-120),_WM)
+        arr=np.clip(np.asarray(fr,np.int16)+GRAIN[f%6],0,255).astype(np.uint8)    # vinetacia hore, potom animovane zrno
         try:
-            p.stdin.write(fr.tobytes())
+            p.stdin.write(arr.tobytes())
         except (BrokenPipeError, OSError):
             break
     try:
