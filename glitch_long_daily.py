@@ -27,12 +27,13 @@ def _load(p):
     return json.load(open(p, encoding="utf-8")) if os.path.exists(p) else []
 
 
-def pick_long(target=TARGET):
-    """Vyber ~target schem: najprv best-effort dogeneruj banku (variety+dlzka), potom rotuj proti poslednym videam."""
+def pick_long(target=TARGET, grow=3):
+    """Denne 1 dlhe video: banka STALE rastie (variety) + LRU rotacia, aby sa denne kompilacie neopakovali.
+    Vyber = 'najmenej nedavno pouzite' schemy naprieic celou bankou; dlzka (pocet kapitol) rastie s bankou."""
     bank = gd.load_bank()
     avoid = [b.get("title", "") for b in bank]
     tries = 0
-    while len(bank) < target and tries < 6:      # best-effort dopln banku (aj ju to natrvalo zvacsi)
+    while len(bank) < 45 and tries < grow:       # kazdy beh best-effort pridaj par novych schem (nech banka rastie)
         tries += 1
         try:
             sch = glitch_gen.generate(avoid)
@@ -41,22 +42,31 @@ def pick_long(target=TARGET):
         if not sch:
             break
         gd.add_to_bank(sch); avoid.append(sch.get("title", "")); bank = gd.load_bank()
-    used = set()
-    for rec in _load(USED_LONG)[-2:]:            # vyhni sa opakovaniu oproti poslednym 2 dlhym videam
-        used |= set(rec.get("ids", []))
-    pool = [s for s in bank if s["id"] not in used]
-    random.shuffle(pool)
-    chosen = pool[:target]
-    if len(chosen) < target:                     # dopln z celej banky ak treba
-        have = {c["id"] for c in chosen}
-        rest = [s for s in bank if s["id"] not in have]; random.shuffle(rest)
-        chosen += rest[:target - len(chosen)]
+    n = min(target, max(8, int(len(bank) * 0.7)))   # rotacia ma vzdy rezervu; video sa predlzuje ako banka rastie
+    last_seen = {}                                # poradie posledneho pouzitia kazdej schemy (vyssie = novsie)
+    for order, rec in enumerate(_load(USED_LONG)):
+        for i in rec.get("ids", []):
+            last_seen[i] = order
+    random.shuffle(bank)                          # tie-break medzi rovnako "starymi"
+    bank.sort(key=lambda s: last_seen.get(s["id"], -1))   # nikdy-nepouzite (-1) prve, potom najstarsie
+    chosen = bank[:n]
+    random.shuffle(chosen)                        # nech sa meni aj poradie kapitol
     return chosen
+
+
+TITLES = [
+    "{n} Money Glitches That Sound Illegal (But Technically Aren't)",
+    "{n} Money Hacks That Sound Too Good To Be Legal",
+    "{n} 'Money Glitches' That Sound Illegal But Actually Aren't",
+    "I Found {n} Money Glitches That Sound Illegal",
+    "{n} Legal Money Loopholes That Sound Like Scams",
+    "{n} Get-Rich 'Glitches' That Sound Illegal (But Are Technically Legal)",
+]
 
 
 def make_meta(subset):
     n = len(subset)
-    title = f"{n} Money Glitches That Sound Illegal (But Technically Aren't)"[:100]
+    title = random.choice(TITLES).format(n=n)[:100]
     desc = (f"The internet's most absurd get-rich money \"glitches\" — {n} of them, back to back.\n\n"
             "Satire / entertainment only. This is NOT financial advice (and no, don't actually melt any coins).\n\n"
             "Chapters:\n" + "\n".join(f"{i}. {s['title']}" for i, s in enumerate(subset, 1))[:3500] + "\n\n"

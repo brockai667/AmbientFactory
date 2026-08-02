@@ -2,7 +2,7 @@ name: Money Glitch Long
 
 on:
   schedule:
-    - cron: "33 3 * * 1,4"    # Pon + Stv 03:33 UTC (04:33 Bratislava, v noci) — dlhe 16:9 dokumenty
+    - cron: "33 3 * * *"      # kazdy den 03:33 UTC (04:33 Bratislava, v noci) — 1 dlhy 16:9 dokument / den
   workflow_dispatch: {}
 
 permissions:
