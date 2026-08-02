@@ -1,0 +1,23 @@
+name: Buffer Check
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install requests
+      - name: Discover Buffer channels (no posting)
+        env:
+          BUFFER_TOKEN: ${{ secrets.BUFFER_TOKEN }}
+        run: |
+          python -c "import os,buffer_post as b; t=(os.environ.get('BUFFER_TOKEN') or '').strip(); print('BUFFER_TOKEN set:', bool(t)); print('DISCOVERED:', b.discover_channels(t) if t else 'NO TOKEN')"
