@@ -1,0 +1,54 @@
+name: Money Glitch Long
+
+on:
+  schedule:
+    - cron: "33 3 * * 1,4"    # Pon + Stv 03:33 UTC (04:33 Bratislava, v noci) — dlhe 16:9 dokumenty
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  models: read
+
+concurrency:
+  group: glitch-long
+  cancel-in-progress: false
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python deps
+        run: pip install numpy pillow requests edge-tts
+
+      - name: Prepare config
+        run: cp config.example.json config.json
+
+      - name: Render + upload long-form (16:9)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YT_REFRESH_FOCUS: ${{ secrets.YT_REFRESH_FOCUS }}
+          YT_REFRESH_STUDY: ${{ secrets.YT_REFRESH_STUDY }}
+          YT_REFRESH_SLEEP: ${{ secrets.YT_REFRESH_SLEEP }}
+        run: python glitch_long_daily.py
+
+      - name: Persist state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          rm -f config.json
+          git add used_long.json bank.json 2>/dev/null || true
+          git commit -m "state: long run $(date -u +%F)" || echo "no changes to commit"
+          for _i in 1 2 3 4; do git pull --rebase -q origin main && git push -q && break || sleep 4; done
