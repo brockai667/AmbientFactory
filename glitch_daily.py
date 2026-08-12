@@ -103,27 +103,8 @@ def make_meta(scheme):
 
 
 def make_thumb(scheme, path):
-    fr = ge.PAPER_IMG.copy(); d = ImageDraw.Draw(fr)
-    hook = scheme["steps"][0]["cap"]; fnt = ge.F(104)
-    words = hook.split(); lines = []; cur = ""
-    for w in words:
-        t = (cur + " " + w).strip()
-        if d.textlength(t, font=fnt) <= 960:
-            cur = t
-        else:
-            if cur:
-                lines.append(cur)
-            cur = w
-    if cur:
-        lines.append(cur)
-    lh = 122; y0 = 360 - (len(lines) - 1) * lh // 2
-    for i, ln in enumerate(lines):
-        w = d.textlength(ln, font=fnt); d.text((540 - w / 2, y0 + i * lh), ln, font=fnt, fill=ge.INK)
-    greens = [s.get("num") for s in scheme["steps"] if s.get("num") and s.get("col") == "green"]
-    if greens:
-        ge.pop(fr, (540, 960), greens[-1], ge.F(240), ge.GREEN, 1.0, shadow=True)
-    ge.paste_c(fr, ge.CHARS[(0, 0)], 540, 1470, 1.0)
-    fr.convert("RGB").save(path, "JPEG", quality=88)
+    # CLICKBAIT karta z enginu — ta ista, co bezi ako prvy frame videa (konzistentny grid YT+IG)
+    ge.make_cover(scheme).convert("RGB").save(path, "JPEG", quality=88)
 
 
 def _do(niche, rtok, c):

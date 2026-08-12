@@ -301,6 +301,60 @@ def _scene(fr,d,st,tin,env,blink,f):
 
 _WM=Image.new("RGBA",(W,60),(0,0,0,0)); ImageDraw.Draw(_WM).text((W/2,20),BRAND,font=FWM,fill=(150,150,150),anchor="mm")
 
+def make_cover(scheme):
+    """CLICKBAIT karta (1080x1920): obrovsky hook + zlty marker na kluc slove + obrie zelene
+    payoff cislo s cervenym kruhom a sipkou + velka hlava maskota. Pouziva sa ako YT thumbnail
+    AJ ako prvych ~0.5s videa (IG/TikTok grid berie prvy frame)."""
+    fr=PAPER_IMG.copy(); d=ImageDraw.Draw(fr)
+    hook=scheme["steps"][0]["cap"]
+    low=hook.lower()
+    for cut in (" in a "," in one "," in just "," every "," without "," using "):
+        k=low.find(cut)
+        if k>=12: hook=hook[:k]; break
+    greens=[s.get("num") for s in scheme["steps"] if s.get("num") and s.get("col","green")=="green"]
+    payoff=str(greens[-1] if greens else (scheme["steps"][0].get("num") or "$$$"))
+    words=[w for w in hook.upper().split()
+           if w.strip(".,!?").rstrip(".") != payoff.upper()][:8]        # sumu z hooku prec — dopovie ju kruzok
+    if not words: words=["THIS","GLITCH","PAYS"]
+    key=next((w for w in words if "$" in w or any(c.isdigit() for c in w)),max(words,key=len))
+    fpx=150
+    while fpx>88:                                            # najvacsi font, pri ktorom hook sadne do <=3 riadkov
+        fnt=F(fpx); lines=[]; cur=""
+        for w in words:
+            t=(cur+" "+w).strip()
+            if d.textlength(t,font=fnt)<=930: cur=t
+            else:
+                if cur: lines.append(cur)
+                cur=w
+        if cur: lines.append(cur)
+        if len(lines)<=3: break
+        fpx-=10
+    lh=int(fpx*1.16); y0=250
+    for i,ln in enumerate(lines):
+        wpx=d.textlength(ln,font=fnt); x0=540-wpx/2; y=y0+i*lh
+        if key in ln.split():                                # zlty marker pas za kluc slovom
+            pre=ln.split(key)[0]
+            kx=x0+d.textlength(pre,font=fnt); kw=d.textlength(key,font=fnt)
+            d.rounded_rectangle([kx-12,y+12,kx+kw+12,y+fpx+2],radius=16,fill=(255,214,74))
+        d.text((x0,y),ln,font=fnt,fill=INK)
+    fN=F(300 if len(payoff)<=5 else 230)
+    while d.textlength(payoff,font=fN)>880 and fN.size>110: fN=F(fN.size-20)
+    py=1040
+    pop(fr,(540,py),payoff,fN,GREEN,1.0,shadow=True,maxw=920)
+    pw=d.textlength(payoff,font=fN)
+    hl_circle(d,540,py,max(300,pw/2+70),fN.size*0.80,1.0,seed=5)
+    ay0,ay1=y0+len(lines)*lh+50,py-int(fN.size*0.80)-50
+    if ay1-ay0>110: arrow(d,(560,ay0),(520,ay1),col=RED,w=14)   # sipka len ked ma miesto (3-riadkovy hook ju nepotrebuje)
+    tile=char_expr(2,0,brow=1)                               # zdvihnute obocie = "no pozri na toto"
+    y1,y2=int(tile.height*0.18),int(tile.height*0.80)        # celo..fuzy (tile ma hore ~200px prazdna!)
+    head=tile.crop((0,y1,tile.width,y2))
+    head=head.resize((int(head.width*1.35),int(head.height*1.35)))
+    head=head.rotate(-5,expand=True,resample=Image.BICUBIC)
+    fr.paste(head,(W-head.width+150,H-int(head.height*0.80)),head)   # tvar VIDNO, spodna hrana orezu pod okrajom
+    fr.paste(VIGN,(0,0),VIGN); fr.paste(_WM,(0,H-120),_WM)
+    return fr
+
+
 def render(scheme, out_path, tmp=None):
     """scheme = {'steps':[{cap,vo,layout,...}, ...]} -> vyrenderuje MP4 do out_path. Vrati out_path."""
     tmp=tmp or os.path.dirname(os.path.abspath(out_path)) or "."
@@ -329,7 +383,15 @@ def render(scheme, out_path, tmp=None):
     p=subprocess.Popen([FFMPEG,"-y","-f","rawvideo","-pix_fmt","rgb24","-s",f"{W}x{H}","-r",str(FPS),
         "-i","-","-i",wav,"-c:v","libx264","-preset","veryfast","-crf","21","-pix_fmt","yuv420p",
         "-c:a","aac","-b:a","160k","-shortest",out_path],stdin=subprocess.PIPE)
+    cover=make_cover(scheme); COVER_F=int(0.55*FPS)           # clickbait karta = prve framy (IG/TikTok grid berie prvy frame)
     for f in range(n):
+        if f<COVER_F:
+            arr=np.clip(np.asarray(cover,np.int16)+GRAIN[f%6],0,255).astype(np.uint8)
+            try:
+                p.stdin.write(arr.tobytes())
+            except (BrokenPipeError, OSError):
+                break
+            continue
         tt=f/FPS; ci=step_at(tt); st=steps[ci]; tin=tt-starts[ci]; fr=PAPER_IMG.copy(); d=ImageDraw.Draw(fr); bl=1 if f in blink else 0
         if st.get("layout","icon")=="mascot":
             lv=int(round(env[f]*5)); bob=int(3*math.sin(tin*1.6))
