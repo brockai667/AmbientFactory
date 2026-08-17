@@ -1,0 +1,36 @@
+name: gen-check (diag)
+on: { workflow_dispatch: {} }
+permissions: { contents: read }
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: probe groq
+        env:
+          MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os, json, urllib.request, urllib.error
+          tok = os.environ.get("MODELS_TOKEN","")
+          print("token set:", bool(tok), "len:", len(tok), "prefix:", tok[:4]+"..." if tok else "-")
+          for model in ("llama-3.3-70b-versatile","llama-3.1-8b-instant"):
+              body = json.dumps({"model": model, "messages":[{"role":"user","content":"Say OK"}], "max_tokens": 5}).encode()
+              req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=body,
+                    headers={"Authorization":"Bearer "+tok,"Content-Type":"application/json","User-Agent":"Mozilla/5.0"})
+              try:
+                  r = urllib.request.urlopen(req, timeout=40); print(model, "OK", r.status)
+              except urllib.error.HTTPError as e:
+                  print(model, "HTTP", e.code, e.read().decode()[:300])
+              except Exception as e:
+                  print(model, "ERR", str(e)[:200])
+          # bez User-Agent (ako v glitch_gen)
+          req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=body,
+                headers={"Authorization":"Bearer "+tok,"Content-Type":"application/json"})
+          try:
+              r = urllib.request.urlopen(req, timeout=40); print("no-UA OK", r.status)
+          except urllib.error.HTTPError as e:
+              print("no-UA HTTP", e.code, e.read().decode()[:300])
+          PY
