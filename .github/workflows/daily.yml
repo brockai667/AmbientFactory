@@ -38,7 +38,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
           MODELS_BASE_URL: https://api.groq.com/openai/v1
-          MODELS_MODEL: llama-3.3-70b-versatile
+          MODELS_MODEL: openai/gpt-oss-120b
+          MODELS_FALLBACK: openai/gpt-oss-20b
           BUFFER_TOKEN: ${{ secrets.BUFFER_TOKEN }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}

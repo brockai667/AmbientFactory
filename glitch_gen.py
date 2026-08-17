@@ -8,10 +8,11 @@ Aby boli VZDY dobre a nikdy sa neopakovali:
   4) dedup proti avoid-listu (stopword-filter aby nefalsoval na 'money/make/cash'),
   5) ak COKOLVEK zlyha -> None -> glitch_daily fallbackne na rucnu banku (nikdy nespadne).
 Token: ENV MODELS_TOKEN alebo GITHUB_TOKEN (Actions s permission models:read)."""
-import os, json, re, time, urllib.request
+import os, json, re, time, urllib.request, urllib.error
 from glitch_engine import ICONS
 
-MODEL = os.environ.get("GLITCH_MODEL") or os.environ.get("MODELS_MODEL", "llama-3.3-70b-versatile")
+MODEL = os.environ.get("GLITCH_MODEL") or os.environ.get("MODELS_MODEL", "openai/gpt-oss-120b")
+FALLBACK = os.environ.get("MODELS_FALLBACK", "openai/gpt-oss-20b")     # Groq 8/2026: Llama modely vyradene
 ENDPOINT = os.environ.get("MODELS_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/") + "/chat/completions"
 ICON_NAMES = set(ICONS.keys())
 
@@ -22,18 +23,26 @@ def call_model(messages, temperature=0.9, max_tokens=1500, tries=3, json_mode=Fa
     tok = _token()
     if not tok:
         return None
-    payload = {"model": MODEL, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
-    if json_mode:
-        payload["response_format"] = {"type": "json_object"}
-    body = json.dumps(payload).encode()
-    for i in range(tries):
-        try:
-            req = urllib.request.Request(ENDPOINT, data=body,
-                headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json"})
-            r = json.loads(urllib.request.urlopen(req, timeout=70).read().decode())
-            return r["choices"][0]["message"]["content"]
-        except Exception as e:
-            print("  [gen] model err:", str(e)[:90]); time.sleep(3 * (i + 1))
+    for model in (MODEL, FALLBACK):                  # primar -> fallback (iny quota bucket / ak model zmizne)
+        payload = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
+        body = json.dumps(payload).encode()
+        for i in range(tries):
+            try:
+                req = urllib.request.Request(ENDPOINT, data=body,
+                    headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json",
+                             "User-Agent": "MoneyGlitch/1.0 (+github actions)"})   # bez UA = Cloudflare 403 (1010)
+                r = json.loads(urllib.request.urlopen(req, timeout=70).read().decode())
+                return r["choices"][0]["message"]["content"]
+            except urllib.error.HTTPError as e:
+                msg = e.read().decode(errors="replace")[:160]
+                print(f"  [gen] {model} HTTP {e.code}: {msg}")
+                if e.code == 404:                    # model neexistuje -> rovno fallback
+                    break
+                time.sleep(3 * (i + 1))
+            except Exception as e:
+                print("  [gen] model err:", str(e)[:90]); time.sleep(3 * (i + 1))
     return None
 
 SYS = ("You are head writer for a viral deadpan-comedy short-form channel called 'Money Glitch'. "
