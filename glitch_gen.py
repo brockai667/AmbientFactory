@@ -25,8 +25,10 @@ def call_model(messages, temperature=0.9, max_tokens=1500, tries=3, json_mode=Fa
         return None
     for model in (MODEL, FALLBACK):                  # primar -> fallback (iny quota bucket / ak model zmizne)
         payload = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+        # gpt-oss cez Groq: striktny json_object mode hadze 400 "Failed to validate JSON" (model
+        # obaluje JSON textom/reasoningom) -> JSON NEvynucujeme, pytame ho v prompte a _extract() ho vylusti
         if json_mode:
-            payload["response_format"] = {"type": "json_object"}
+            messages = messages + [{"role": "system", "content": "Respond with ONLY a single valid JSON object. No prose, no markdown fences, no reasoning."}]
         body = json.dumps(payload).encode()
         for i in range(tries):
             try:
