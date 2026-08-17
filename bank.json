@@ -1078,5 +1078,206 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-turn-pennies-into-a-fortune-with-copper-",
+    "title": "Turn Pennies into a Fortune with Copper Melt Arbitrage",
+    "steps": [
+      {
+        "cap": "Turn pennies into cash.",
+        "vo": "Here's how you turn tiny copper coins into a big bank account.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Open a 0% APR card.",
+        "vo": "First, open a credit card with a zero percent introductory APR and a ten thousand dollar limit.",
+        "layout": "icon",
+        "icon": "card",
+        "num": "0% APR",
+        "col": "green"
+      },
+      {
+        "cap": "Buy $10k of pennies.",
+        "vo": "Charge ten thousand dollars of face‑value pennies from your local bank’s bulk coin drawer.",
+        "layout": "icon",
+        "icon": "coin",
+        "num": "$10,000",
+        "col": "red"
+      },
+      {
+        "cap": "Melt for copper profit.",
+        "vo": "Take those pennies to a foundry and melt them for copper worth about fifteen thousand dollars.",
+        "layout": "icon",
+        "icon": "goldcoin",
+        "num": "$15,000",
+        "col": "green"
+      },
+      {
+        "cap": "Pay card, keep $5k.",
+        "vo": "Pay off the credit card balance with the melt proceeds and pocket the five thousand dollar surplus.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$5,000",
+        "col": "green"
+      },
+      {
+        "cap": "Reinvest and loop.",
+        "vo": "Use the five thousand surplus plus the original ten thousand to buy fifteen thousand dollars of pennies and repeat the process.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ],
+        "num": "$15,000",
+        "col": "red"
+      },
+      {
+        "cap": "$57k after 5 cycles.",
+        "vo": "After five cycles your profit compounds to roughly fifty‑seven thousand dollars.",
+        "layout": "icon",
+        "icon": "chart",
+        "num": "$57,000",
+        "col": "green"
+      },
+      {
+        "cap": "Walk away with $200k.",
+        "vo": "Do the loop ten times and you’ll walk away with two hundred thousand dollars in pure profit.",
+        "layout": "mascot"
+      }
+    ]
+  },
+  {
+    "id": "gen-turn-5-into-100k-a-year-by-recycling-sma",
+    "title": "Turn $5 into $100k a year by recycling smartphones",
+    "steps": [
+      {
+        "cap": "Turn $5 into $100k",
+        "vo": "Here’s how you turn five dollars into one hundred thousand a year.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Buy cheap broken phones",
+        "vo": "First, scour thrift stores for broken smartphones costing five dollars or less.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$5",
+        "col": "red"
+      },
+      {
+        "cap": "Open them up",
+        "vo": "Next, open each phone, remove the PCB and cables, and isolate the copper wiring.",
+        "layout": "icon",
+        "icon": "can"
+      },
+      {
+        "cap": "Sell the copper",
+        "vo": "Then, melt the copper and sell it to a recycler for seven dollars per pound.",
+        "layout": "icon",
+        "icon": "goldcoin",
+        "num": "$7/lb",
+        "col": "green"
+      },
+      {
+        "cap": "Reinvest in index",
+        "vo": "After collecting the copper proceeds, reinvest the cash into a low-cost index fund to let the money compound.",
+        "layout": "icon",
+        "icon": "goldbar"
+      },
+      {
+        "cap": "Monthly repeat cycle",
+        "vo": "Repeat the buy-open-sell cycle every month, letting the compound interest grow your base capital.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Tax deductions",
+        "vo": "Simultaneously, deduct the cost of the phones and repair labor from your taxable income to slash your tax bill.",
+        "layout": "icon",
+        "icon": "cash"
+      },
+      {
+        "cap": "Enjoy $100,000 yearly",
+        "vo": "At the end of the year, the compounded returns plus copper sales will net you about one hundred thousand dollars a year.",
+        "layout": "mascot"
+      }
+    ]
+  },
+  {
+    "id": "gen-turn-10k-into-2-4m-with-hyper-inflation-",
+    "title": "Turn $10K into $2.4M with Hyper‑Inflation Arbitrage",
+    "steps": [
+      {
+        "cap": "Open offshore account.",
+        "vo": "First, open an offshore bank account that lets you hold foreign cash with zero fees.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Transfer $10,000 in.",
+        "vo": "Wire ten thousand dollars straight into that new account.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$10,000",
+        "col": "red"
+      },
+      {
+        "cap": "Buy Zedlandian dollars.",
+        "vo": "Immediately convert the dollars into Zedlandian currency at a one‑to‑one rate.",
+        "layout": "icon",
+        "icon": "coin",
+        "num": "10,000 Z$",
+        "col": "red"
+      },
+      {
+        "cap": "Inflation spikes 150%.",
+        "vo": "Within thirty days Zedlandia’s inflation rockets to one‑hundred‑fifty percent, tripling the local unit’s nominal value.",
+        "layout": "icon",
+        "icon": "chart"
+      },
+      {
+        "cap": "Sell back for $30,000.",
+        "vo": "Convert the now‑triple‑valued Zedlandian dollars back to US dollars and you’ll have thirty thousand dollars.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$30,000",
+        "col": "green"
+      },
+      {
+        "cap": "Repeat the cycle 5×.",
+        "vo": "Do the same deposit‑convert‑wait‑sell loop five times in a row to compound the gains.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Bank sends $2,430,000.",
+        "vo": "After five cycles your account shows two million four hundred thirty thousand dollars ready to be transferred out.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$2,430,000",
+        "col": "green"
+      },
+      {
+        "cap": "Avoid taxes via treaty.",
+        "vo": "Use the foreign‑tax‑treaty exemption to move the cash back home with little or no tax liability.",
+        "layout": "icon",
+        "icon": "phone"
+      },
+      {
+        "cap": "Cash out and celebrate.",
+        "vo": "Finally pull the money into your personal account and enjoy the two‑point‑four million dollar windfall.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
