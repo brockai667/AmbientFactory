@@ -97,14 +97,41 @@ FEWSHOT = (
  '{"cap":"...for buying nothing.","vo":"For buying absolutely nothing.","icon":"mascot"}]}')
 
 def _extract(txt):
-    m = re.search(r"\{.*\}", txt or "", re.S)
-    if not m:
-        return None
-    for cand in (m.group(0), re.sub(r",\s*([}\]])", r"\1", m.group(0))):
-        try:
-            return json.loads(cand)
-        except Exception:
-            continue
+    """Vylusti prvy validny JSON objekt z textu (gpt-oss rado obali JSON reasoningom / ```json fences /
+    prida dalsie {} v texte). Skusi: (1) fenced blok, (2) kazdy vyvazeny {...} usek zlava, (3) trailing-comma fix."""
+    txt = txt or ""
+    cands = []
+    for m in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", txt, re.S):
+        cands.append(m.group(1))
+    starts = [i for i, ch in enumerate(txt) if ch == "{"]
+    for s in starts[:12]:
+        depth = 0; instr = False; esc = False
+        for j in range(s, len(txt)):
+            ch = txt[j]
+            if instr:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    instr = False
+                continue
+            if ch == '"':
+                instr = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    cands.append(txt[s:j + 1]); break
+    for cand in cands:
+        for c in (cand, re.sub(r",\s*([}\]])", r"\1", cand)):
+            try:
+                j = json.loads(c)
+                if isinstance(j, dict):
+                    return j
+            except Exception:
+                continue
     return None
 
 def _one_sentence(vo):
