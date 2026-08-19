@@ -1279,5 +1279,80 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-how-to-turn-trash-phones-into-65-000-a-m",
+    "title": "How to turn trash phones into $65,000 a month",
+    "steps": [
+      {
+        "cap": "Start the gold glitch.",
+        "vo": "Here's the absurdly simple way to turn trash into treasure.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Find discarded phones.",
+        "vo": "First, scavenge local dumpsters for outdated smartphones that are being tossed out.",
+        "layout": "icon",
+        "icon": "can"
+      },
+      {
+        "cap": "Extract gold contacts.",
+        "vo": "Next, dissolve the tiny gold-plated connectors with cheap kitchen acid to collect raw gold.",
+        "layout": "icon",
+        "icon": "goldcoin",
+        "num": "$0.02 per phone",
+        "col": "green"
+      },
+      {
+        "cap": "Sell gold to refinery.",
+        "vo": "Then sell the recovered gold immediately to a refinery at spot market price.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$15 per phone",
+        "col": "green"
+      },
+      {
+        "cap": "Loop the process.",
+        "vo": "Repeat this cycle dozens of times each week to build a steady gold stream.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ],
+        "num": "$750 weekly",
+        "col": "green"
+      },
+      {
+        "cap": "Rent a dumpster.",
+        "vo": "Upgrade by renting a large dumpster for a few hundred dollars to harvest hundreds of phones.",
+        "layout": "icon",
+        "icon": "house",
+        "num": "$500/month cost",
+        "col": "red"
+      },
+      {
+        "cap": "Calculate net profit.",
+        "vo": "After costs you net about six thousand five hundred dollars every month.",
+        "layout": "icon",
+        "icon": "chart",
+        "num": "$6,500/month",
+        "col": "green"
+      },
+      {
+        "cap": "Buy processing kit.",
+        "vo": "Use those profits to buy a cheap bulk processing kit that can handle thousands of phones.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$3,000 kit",
+        "col": "red"
+      },
+      {
+        "cap": "Earn $65k a month.",
+        "vo": "Now you process five thousand phones a month and pull in sixty five thousand dollars profit.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
