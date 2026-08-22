@@ -19,10 +19,49 @@ ICON_NAMES = set(ICONS.keys())
 def _token():
     return os.environ.get("MODELS_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
 
+FALLBACK2 = os.environ.get("MODELS_FALLBACK2", "groq/compound-mini")
+
+
+def _msg_text(m):
+    return (m.get("content") or "").strip() or (m.get("reasoning") or "").strip()
+
+
 def call_model(messages, temperature=0.9, max_tokens=1500, tries=3, json_mode=False):
     tok = _token()
     if not tok:
         return None
+    if json_mode:
+        messages = list(messages) + [{"role": "system", "content":
+            "Respond with ONLY a single valid JSON object. No prose, no markdown fences, no reasoning."}]
+    for model in (MODEL, FALLBACK, FALLBACK2):
+        payload = {"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+        if model.startswith("openai/gpt-oss"):
+            payload["reasoning_effort"] = "low"          # reasoning inak zozerie max_tokens -> prazdny content
+        body = json.dumps(payload).encode()
+        waited = False
+        for i in range(tries):
+            try:
+                req = urllib.request.Request(ENDPOINT, data=body,
+                    headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json",
+                             "User-Agent": "MoneyGlitch/1.0 (+github actions)"})
+                r = json.loads(urllib.request.urlopen(req, timeout=70).read().decode())
+                txt = _msg_text(r["choices"][0]["message"])
+                if txt:
+                    return txt
+                print(f"  [gen] {model}: prazdna odpoved"); break
+            except urllib.error.HTTPError as e:
+                msg = e.read().decode(errors="replace")[:160]
+                print(f"  [gen] {model} HTTP {e.code}: {msg}")
+                if e.code == 404:
+                    break
+                if e.code == 429:
+                    if not waited:
+                        waited = True; time.sleep(65); continue   # TPM okno -> pockaj, ten isty model
+                    break
+                time.sleep(3 * (i + 1))
+            except Exception as e:
+                print("  [gen] model err:", str(e)[:90]); time.sleep(3 * (i + 1))
+    return None
     if json_mode:
         # gpt-oss cez Groq: striktny json_object mode hadze 400 -> JSON len promptom, _extract() ho vylusti
         messages = list(messages) + [{"role": "system", "content":
@@ -200,7 +239,8 @@ def generate(avoid=None, tries=4):
         return None
     avoid = [a for a in (avoid or []) if a]
     icons = ", ".join(sorted(ICON_NAMES))
-    for _ in range(tries):
+    for _k in range(tries):
+        if _k: time.sleep(12)
         user = ("Each step is a flat object: {\"cap\":\"...\",\"vo\":\"...\",\"icon\":\"NAME\"} plus optional "
                 "\"num\":\"$X\" and \"col\":\"red\"|\"green\". "
                 f"icon must be one of: mascot, loop, {icons}. Use icon \"mascot\" for the FIRST and LAST step, "
