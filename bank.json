@@ -1354,5 +1354,149 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-how-to-turn-bottle-deposits-into-a-200-m",
+    "title": "How to turn bottle deposits into a $200 million empire",
+    "steps": [
+      {
+        "cap": "Start the bottle hustle.",
+        "vo": "First, get the idea that empty beverage containers are tiny gold mines waiting to be tapped.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Target high‑deposit states.",
+        "vo": "Find the states where each bottle returns a fifty cent deposit and map the nearest redemption centers.",
+        "layout": "icon",
+        "icon": "cash"
+      },
+      {
+        "cap": "Buy bulk bottles cheap.",
+        "vo": "Purchase pallets of empty bottles from wholesalers for a few cents each and load them onto a truck.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$15,000",
+        "col": "red"
+      },
+      {
+        "cap": "Resell in low‑deposit area.",
+        "vo": "Ship those pallets to a neighboring low‑deposit state and sell the bottles to a recycler for ten cents profit per unit.",
+        "layout": "icon",
+        "icon": "coin",
+        "num": "$0.10 profit eac",
+        "col": "green"
+      },
+      {
+        "cap": "Loop the profit daily.",
+        "vo": "Take the daily profit, buy more pallets, and repeat the cycle every day of the year to compound the returns.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ],
+        "num": "Repeat 365×",
+        "col": "green"
+      },
+      {
+        "cap": "Earn $5,500 per day.",
+        "vo": "At full scale you’ll be pulling in five thousand five hundred dollars each day just from the deposit spread.",
+        "layout": "icon",
+        "icon": "dollar",
+        "num": "$5,500",
+        "col": "green"
+      },
+      {
+        "cap": "Scale to 100 trucks.",
+        "vo": "Deploy a hundred trucks, each doing the same loop, and your daily cash flow jumps to half a million dollars.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$550,000",
+        "col": "green"
+      },
+      {
+        "cap": "$200 million a year.",
+        "vo": "Multiply that across the year and you’ve cracked a two‑hundred‑million‑dollar annual money glitch.",
+        "layout": "mascot"
+      }
+    ]
+  },
+  {
+    "id": "gen-how-to-make-265-000-by-flipping-cheap-bo",
+    "title": "How to make $265,000 by flipping cheap bottles",
+    "steps": [
+      {
+        "cap": "Make $265k fast!",
+        "vo": "Here’s how to turn a cheap bottle into a quick $265,000.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Buy 10k bottles @1¢",
+        "vo": "First, buy ten thousand 1‑liter bottles for one cent each, costing you just $100.",
+        "layout": "icon",
+        "icon": "can",
+        "num": "$100",
+        "col": "red"
+      },
+      {
+        "cap": "Resell to boutique @50¢",
+        "vo": "Sell those bottles to a boutique coffee shop at fifty cents each, earning $5,000.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$5,000",
+        "col": "green"
+      },
+      {
+        "cap": "Repeat 50 times",
+        "vo": "Repeat that purchase‑sell cycle fifty times to amass $250,000.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ],
+        "num": "$250,000",
+        "col": "green"
+      },
+      {
+        "cap": "Dump the cash",
+        "vo": "Dump the $250,000 into a high‑yield savings account earning five percent per year.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "5%",
+        "col": "green"
+      },
+      {
+        "cap": "Earn $12.5k interest",
+        "vo": "After one year you’ll have earned $12,500 in interest.",
+        "layout": "icon",
+        "icon": "coin",
+        "num": "$12,500",
+        "col": "green"
+      },
+      {
+        "cap": "Compound for 12 months",
+        "vo": "Compounding monthly at five percent brings that to roughly $15,600 after twelve months.",
+        "layout": "icon",
+        "icon": "goldbar",
+        "num": "$15,600",
+        "col": "green"
+      },
+      {
+        "cap": "Total = $265,600",
+        "vo": "Add that to your original $250,000, and you’ve made $265,600 in a year.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$265,600",
+        "col": "green"
+      },
+      {
+        "cap": "...for flipping bottles.",
+        "vo": "That’s how you make $265,000 by flipping cheap bottles.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
