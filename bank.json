@@ -1498,5 +1498,84 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-make-2-500-by-flipping-used-car-batterie",
+    "title": "Make $2,500 by flipping used car batteries",
+    "steps": [
+      {
+        "cap": "Make $2,500 flipping batteries.",
+        "vo": "Here’s how to make two thousand five hundred dollars flipping used car batteries.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Buy cheap used batteries.",
+        "vo": "First, buy 50 used car batteries at thirty dollars each from junkyards.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$30 each",
+        "col": "red"
+      },
+      {
+        "cap": "Total cost $1,500.",
+        "vo": "That brings your total cost to one thousand five hundred dollars.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$1,500",
+        "col": "red"
+      },
+      {
+        "cap": "Load them onto a truck.",
+        "vo": "Load the fifty batteries onto your truck, ready for delivery.",
+        "layout": "icon",
+        "icon": "can"
+      },
+      {
+        "cap": "Deliver to refurbisher.",
+        "vo": "Deliver them to a local refurbisher who pays eighty dollars per battery.",
+        "layout": "icon",
+        "icon": "order"
+      },
+      {
+        "cap": "Get $80 per battery.",
+        "vo": "The refurbisher pays you eighty dollars for each battery you bring.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$80 each",
+        "col": "green"
+      },
+      {
+        "cap": "Profit $50 each.",
+        "vo": "That gives you a profit of fifty dollars per battery.",
+        "layout": "icon",
+        "icon": "chart",
+        "num": "$50 each",
+        "col": "green"
+      },
+      {
+        "cap": "Repeat the cycle.",
+        "vo": "Repeat the buy‑deliver cycle until you’ve flipped fifty batteries.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "$2,500 final payoff.",
+        "vo": "Doing fifty cycles nets you two thousand five hundred dollars in profit.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$2,500",
+        "col": "green"
+      },
+      {
+        "cap": "Done flipping batteries.",
+        "vo": "That’s all it takes to make $2,500 flipping used car batteries.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
