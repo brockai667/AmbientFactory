@@ -1577,5 +1577,155 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-how-to-earn-184-500-a-year-by-harvesting",
+    "title": "How to earn $184,500 a year by harvesting expired coupons",
+    "steps": [
+      {
+        "cap": "Start the coupon hunt.",
+        "vo": "First, gather all expired coupons from supermarkets and pharmacies because they still have legal tender value when redeemed for store credit.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Collect $5,000 in coupons.",
+        "vo": "You’ll amass about five thousand dollars in coupons after a month of scouring discount bins and trash cans.",
+        "layout": "icon",
+        "icon": "gift",
+        "num": "$5,000",
+        "col": "red"
+      },
+      {
+        "cap": "Convert to store credit.",
+        "vo": "Take those coupons to the store’s customer service desk and exchange them for store credit at a 100% rate.",
+        "layout": "icon",
+        "icon": "card",
+        "num": "$5,000",
+        "col": "green"
+      },
+      {
+        "cap": "Buy high‑margin items.",
+        "vo": "Use the store credit to purchase high‑margin items like bulk coffee beans that you can resell for a profit.",
+        "layout": "icon",
+        "icon": "coffee",
+        "num": "$5,000",
+        "col": "red"
+      },
+      {
+        "cap": "Resell at 30% profit.",
+        "vo": "Then sell those items on a marketplace for a thirty percent markup, turning five thousand into six‑five hundred dollars.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$650",
+        "col": "green"
+      },
+      {
+        "cap": "Recycle the cash loop.",
+        "vo": "Take the $650 profit, buy more coupons with it, and repeat the cycle to compound your earnings each month.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Monthly profit hits $15,375.",
+        "vo": "After twelve loops you’ll be pulling fifteen thousand three hundred seventy‑five dollars a month from coupon arbitrage.",
+        "layout": "icon",
+        "icon": "chart",
+        "num": "$15,375",
+        "col": "green"
+      },
+      {
+        "cap": "That's $184,500 a year!",
+        "vo": "Multiply that monthly cash flow by twelve and you’ve cracked a one‑eighty‑four‑thousand‑five‑hundred‑dollar‑a‑year money glitch.",
+        "layout": "mascot"
+      }
+    ]
+  },
+  {
+    "id": "gen-how-to-turn-50k-worth-of-old-monitors-in",
+    "title": "How to turn $50k worth of old monitors into $1.35M in gold",
+    "steps": [
+      {
+        "cap": "Turn monitors into gold.",
+        "vo": "First, buy $50,000 of discarded office monitors and sell them to a certified e‑waste recycler.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Get a gold‑panning kit.",
+        "vo": "Next, purchase a high‑yield gold‑panning kit for $200 to extract the precious metal from the melt.",
+        "layout": "icon",
+        "icon": "gem",
+        "num": "$200",
+        "col": "red"
+      },
+      {
+        "cap": "Melt monitors to ore.",
+        "vo": "Heat the monitors in a furnace; each yields about 0.5 grams of gold, totaling roughly 25 kilograms from the 50,000 units.",
+        "layout": "icon",
+        "icon": "goldbar",
+        "num": "25 kg",
+        "col": "red"
+      },
+      {
+        "cap": "Refine the gold.",
+        "vo": "Refine the ore in a chemical bath to recover pure gold at a cost of $500 for reagents and labor.",
+        "layout": "icon",
+        "icon": "goldcoin",
+        "num": "$500",
+        "col": "red"
+      },
+      {
+        "cap": "Sell to a bullion dealer.",
+        "vo": "Sell the 25 kg of refined gold to a reputable bullion dealer at $60,000 per kilogram, grossing $1,500,000.",
+        "layout": "icon",
+        "icon": "dollar",
+        "num": "$1,500,000",
+        "col": "green"
+      },
+      {
+        "cap": "Pay the 10% tax.",
+        "vo": "Subtract the mandatory 10% tax on precious metal sales, reducing the net to $1,350,000.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$1,350,000",
+        "col": "green"
+      },
+      {
+        "cap": "Reinvest in more monitors.",
+        "vo": "Reinvest the $1.35 million to buy another batch of 200,000 monitors, multiplying the gold yield by four.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "200,000 monitors",
+        "col": "red"
+      },
+      {
+        "cap": "Repeat the melt cycle.",
+        "vo": "Repeat steps 2‑5 for the new batch to compound your gold production each cycle.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Harvest a $5.4M profit.",
+        "vo": "After the second cycle, your net profit climbs to $5,400,000, a straight‑line multiplier from the original $50,000.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$5,400,000",
+        "col": "green"
+      },
+      {
+        "cap": "Profit from gold mining.",
+        "vo": "Finally, keep harvesting gold from e‑waste monitors and watch your wealth grow like a logical compounding interest.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
