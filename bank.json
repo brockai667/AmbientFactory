@@ -1727,5 +1727,88 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-how-to-make-45-000-a-year-selling-recycl",
+    "title": "How to make $45,000 a year selling recycled laptop screens as art",
+    "steps": [
+      {
+        "cap": "Make $45,000 a year.",
+        "vo": "Here's how to make forty-five thousand dollars a year by turning old laptop screens into art.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Buy used laptops cheap.",
+        "vo": "First, scour thrift stores and buy used laptops for under $20 each.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$20 each",
+        "col": "red"
+      },
+      {
+        "cap": "Strip the LCD panels.",
+        "vo": "Next, disassemble the laptops and salvage the LCD panels for free.",
+        "layout": "icon",
+        "icon": "goldcoin",
+        "num": "0% cost",
+        "col": "green"
+      },
+      {
+        "cap": "Cut into shapes.",
+        "vo": "Use a precision cutter to slice the panels into small, art‑ready squares.",
+        "layout": "icon",
+        "icon": "coin",
+        "num": "$0",
+        "col": "green"
+      },
+      {
+        "cap": "Paint each panel.",
+        "vo": "Apply acrylic paint to each panel to create a unique color gradient.",
+        "layout": "icon",
+        "icon": "coffee",
+        "num": "$0",
+        "col": "green"
+      },
+      {
+        "cap": "Mount on wood frames.",
+        "vo": "Attach each painted panel to a lightweight wooden frame for display.",
+        "layout": "icon",
+        "icon": "house",
+        "num": "$0",
+        "col": "green"
+      },
+      {
+        "cap": "Sell as limited edition prints.",
+        "vo": "List each framed panel as a limited‑edition print on an online marketplace.",
+        "layout": "icon",
+        "icon": "gem",
+        "num": "$250 each",
+        "col": "green"
+      },
+      {
+        "cap": "Sell 200 prints a year.",
+        "vo": "Sell two hundred prints a year, hitting the $50,000 mark quickly.",
+        "layout": "icon",
+        "icon": "chart",
+        "num": "200",
+        "col": "green"
+      },
+      {
+        "cap": "Repeat for profit.",
+        "vo": "Repeat the cycle every year and keep the profit rolling like a loop.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "$45,000 a year, no tech required.",
+        "vo": "You’ll be making $45,000 a year with nothing but used laptops and a paintbrush.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
