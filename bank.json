@@ -1810,5 +1810,68 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-turn-spare-change-into-250-000-with-one-",
+    "title": "Turn Spare Change into $250,000 with One Simple Melt",
+    "steps": [
+      {
+        "cap": "Start the copper quest.",
+        "vo": "First, gather all your loose change and old pennies from around the house.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Collect $5,000 in pennies.",
+        "vo": "You’ll end up with about five thousand dollars worth of pennies after a month of hunting.",
+        "layout": "icon",
+        "icon": "coin",
+        "num": "$5,000",
+        "col": "red"
+      },
+      {
+        "cap": "Melt them down safely.",
+        "vo": "Take the pennies to a furnace and melt them into pure copper bars.",
+        "layout": "icon",
+        "icon": "goldbar"
+      },
+      {
+        "cap": "Sell copper by weight.",
+        "vo": "Sell the copper at the scrap yard where they pay ten dollars per pound.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$10/lb",
+        "col": "green"
+      },
+      {
+        "cap": "Yield $1,200 in copper.",
+        "vo": "Your five thousand dollars in pennies become roughly a hundred pounds of copper worth twelve hundred dollars.",
+        "layout": "icon",
+        "icon": "goldcoin",
+        "num": "$1,200",
+        "col": "green"
+      },
+      {
+        "cap": "Buy copper futures contracts.",
+        "vo": "Use that cash to buy copper futures contracts at a locked‑in price.",
+        "layout": "icon",
+        "icon": "chart"
+      },
+      {
+        "cap": "Copper price spikes 200%.",
+        "vo": "When the market spikes two hundred percent, you sell the contracts for a huge profit.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Cash out $250,000 profit.",
+        "vo": "That swing turns your initial five thousand dollars into two hundred fifty thousand dollars total.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
