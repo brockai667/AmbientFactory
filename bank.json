@@ -1873,5 +1873,80 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-how-to-earn-112-000-a-year-from-supermar",
+    "title": "How to earn $112,000 a year from supermarket loyalty points",
+    "steps": [
+      {
+        "cap": "Start the cash flow.",
+        "vo": "Here's how you turn grocery loyalty points into a six‑figure income.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Open a high‑rate credit card.",
+        "vo": "First, open a credit card that offers three percent cash back on supermarkets.",
+        "layout": "icon",
+        "icon": "card",
+        "num": "3% back",
+        "col": "green"
+      },
+      {
+        "cap": "Spend $15,000 monthly on groceries.",
+        "vo": "Then use that card to spend fifteen thousand dollars on groceries each month.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$15,000",
+        "col": "red"
+      },
+      {
+        "cap": "Earn 10,000 loyalty points per $100.",
+        "vo": "The store’s loyalty program gives you ten thousand points for every hundred dollars you spend.",
+        "layout": "icon",
+        "icon": "gift",
+        "num": "10k pts/$100",
+        "col": "green"
+      },
+      {
+        "cap": "Redeem points for $2 cash value each.",
+        "vo": "Each point is redeemable for two cents in cash back at checkout.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$2/pt",
+        "col": "green"
+      },
+      {
+        "cap": "Convert points into cash‑back loop.",
+        "vo": "Redeem all your points as cash back, then use that cash to pay your credit‑card balance and repeat the cycle.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Monthly cash‑back totals $5,400.",
+        "vo": "That cycle gives you five thousand four hundred dollars in cash back every month.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$5,400",
+        "col": "green"
+      },
+      {
+        "cap": "Annual profit hits $112,800.",
+        "vo": "Multiply that by twelve and you’re looking at one hundred twelve thousand eight hundred dollars a year.",
+        "layout": "icon",
+        "icon": "chart",
+        "num": "$112,800",
+        "col": "green"
+      },
+      {
+        "cap": "All done, no work needed.",
+        "vo": "And that’s how you make a six‑figure salary without ever leaving the grocery aisle.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
