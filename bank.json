@@ -1948,5 +1948,80 @@
         "layout": "mascot"
       }
     ]
+  },
+  {
+    "id": "gen-earn-112-000-a-year-by-flipping-free-cof",
+    "title": "Earn $112,000 a year by flipping free coffee cup deposits",
+    "steps": [
+      {
+        "cap": "Start the coffee cup grind.",
+        "vo": "First, collect all the free coffee cups with refundable deposits you can find around town.",
+        "layout": "mascot"
+      },
+      {
+        "cap": "Gather 5,000 cups.",
+        "vo": "Gather about five thousand disposable coffee cups each month from office kitchens and cafés.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "5,000 cups",
+        "col": "red"
+      },
+      {
+        "cap": "Deposit at reverse vending.",
+        "vo": "Take them to a reverse vending machine that refunds the deposit per cup.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$0.10 per cup",
+        "col": "green"
+      },
+      {
+        "cap": "Earn $500 daily.",
+        "vo": "That nets you five hundred dollars a day in pure deposit refunds.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$500",
+        "col": "green"
+      },
+      {
+        "cap": "Sell empty cups bulk.",
+        "vo": "Next, sell the empty cups in bulk to a recycling plant that pays per pound of paper and plastic.",
+        "layout": "icon",
+        "icon": "bag",
+        "num": "$0.05 per cup",
+        "col": "green"
+      },
+      {
+        "cap": "Make $250 more.",
+        "vo": "That adds another two hundred fifty dollars a day from recycling fees.",
+        "layout": "icon",
+        "icon": "cash",
+        "num": "$250",
+        "col": "green"
+      },
+      {
+        "cap": "Loop the cash back.",
+        "vo": "Now feed that cash back into buying more coffee to keep the cycle going.",
+        "layout": "loop",
+        "loop": [
+          "card",
+          "coin",
+          "cash",
+          "bag"
+        ]
+      },
+      {
+        "cap": "Annual profit $112,000.",
+        "vo": "Do this every day and you’ll pull in one hundred twelve thousand dollars a year.",
+        "layout": "icon",
+        "icon": "dollar",
+        "num": "$112,000",
+        "col": "green"
+      },
+      {
+        "cap": "Drink coffee, earn cash.",
+        "vo": "All while drinking free coffee and making money at the same time.",
+        "layout": "mascot"
+      }
+    ]
   }
 ]
